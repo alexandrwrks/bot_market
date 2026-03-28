@@ -8,6 +8,15 @@ load_dotenv()
 
 DATA_BASE_NAME = os.getenv("DATA_BASE_NAME")
 
+logging.basicConfig(
+    filename="test_api.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+logger = logging.getLogger(__name__)
+
 class UsersManager:
     def __init__(self):
         self.db_name = DATA_BASE_NAME
@@ -15,11 +24,15 @@ class UsersManager:
     async def init_db(self):
         try:
             async with aiosqlite.connect(self.db_name) as db:
+                # telegram_id = id пользователя из Telegram
                 await db.execute("""
                 CREATE TABLE IF NOT EXISTS Users (
                              id INTEGER PRIMARY KEY AUTOINCREMENT,
-                             user_id INTEGER UNIQUE NOT NULL,
-                             username TEXT,
+                             telegram_id INTEGER UNIQUE NOT NULL,
+                             first_name TEXT,
+                             last_name TEXT,
+                             is_active BOOLEAN DEFAULT TRUE,
+                             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                             )
                 """)
@@ -27,37 +40,54 @@ class UsersManager:
                 await db.commit()
 
         except aiosqlite.Error as e:
-            logging.error(f"Database error: {e}")
+            logger.error(f"Database error: {e}")
 
-    async def add_user_data(self, user_info: dict):
+    async def create_user(self, tg_user: TgUser):
+        """Добавление пользоватеяля в базу данных"""
         try:
             async with aiosqlite.connect(self.db_name) as db:
                 await db.execute("""
-                    INSERT INTO Users (user_id, username, created_at = CURRENT_TIMESTAMP) VALUES (?, ?) 
+                    INSERT INTO Users (telegram_id, first_name, last_name, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP) 
                 """, (
-                    user_info["user_id"],
-                    user_info["name"]
+                    tg_user.id,
+                    tg_user.first_name,
+                    tg_user.last_name
                 ))
 
                 await db.commit()
 
         except aiosqlite.IntegrityError as e:
-            logging.error(f"Unique error: {e}")
+            logger.error(f"Unique error: {e}")
 
         except aiosqlite.Error as e:
-            logging.error(f"Error: {e}")
+            logger.error(f"Error: {e}")
 
-    async def check_user_id(self, tg_user_id: int):
+    async def exists_user_by_telegram_id(self, telegram_id: int) -> bool:
+        """Проверка существует ли пользоваетль в БД"""
         try:
             async with aiosqlite.connect(self.db_name) as db:
-                cursor = await db.execute("SELECT user_id FROM Users WHERE user_id = ?",
-                                          (tg_user_id,))
-                
+                cursor = await db.execute("SELECT telegram_id FROM Users WHERE telegram_id = ?", (telegram_id,))
+
                 result = await cursor.fetchone()
 
-                return result
+                """Возращаем True если пользоваетель есть в БД, иначе"""
+                return True if result else False
 
         except aiosqlite.Error as e:
-            logging.error(f"")
+            logger.error(f"Ошибка чтения данных: {e}")
+
+    async def update_user(self, tg_user: TgUser):
+        """Обновление данных пользователя"""
+        try:
+            async with aiosqlite.connect(self.db_name) as db:
+                await db.execute("UPDATE Users SET first_name = ?, last_name = ?, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ?", 
+                                 (tg_user.first_name, tg_user.last_name, tg_user.id)
+                                 )
+
+                await db.commit()
+
+        except aiosqlite.Error as e:
+            logger.error(f"Ошибка обновления данных: {e}")
+
 
 users_manager = UsersManager()

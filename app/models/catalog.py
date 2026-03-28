@@ -16,16 +16,19 @@ class CatalogManager:
             async with aiosqlite.connect(self.db_name) as db:
                 await db.execute("""
                     CREATE TABLE IF NOT EXISTS Catalog (
-                                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                name TEXT,
-                                description TEXT,
-                                price DECINIMAL,
-                                amount INTEGER,
-                                photo_path TEXT,
-                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )""")
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT,
+                        description TEXT,
+                        price DECIMAL,
+                        amount INTEGER,
+                        photo_path TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        )
+                """)
 
                 await db.commit()
 
         except aiosqlite.Error as e:
             logging.error(f"Ошибка инициализация БД: {e}")
+
+catalog_manager = CatalogManager()

@@ -9,6 +9,8 @@ router = Router()
 async def get_orders(
     callback: CallbackQuery
 ):
+    await callback.answer()
+    
     text1 = ("У вас пока что нет активных заказов!")
     text2 = ("Ваши заказы: ")
     """Проверка наличия заказов у пользователя"""
@@ -17,5 +19,3 @@ async def get_orders(
         text=text2,
         reply_markup=get_user_orders()
     )
-
-    await callback.answer()

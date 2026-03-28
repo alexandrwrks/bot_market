@@ -10,6 +10,7 @@ async def get_basket(
     callback: CallbackQuery
 ):
     """Подсчитать сумму товаров для каждого польщователя"""
+    await callback.answer()
 
     text = ("Ваша корзина\n"
             "Сумма товаров:\n"
@@ -20,5 +21,3 @@ async def get_basket(
         text=text,
         reply_markup=get_user_basket()
     )
-
-    await callback.answer()
