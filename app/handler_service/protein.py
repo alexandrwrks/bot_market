@@ -1,7 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, FSInputFile
-from app.keyboards.categories import get_protein
-from app.keyboards.Back import back_to_protein
+from app.keyboards.categories import get_catalog_categories, get_protein
+from app.keyboards.Back import back_to_one
 
 router = Router()
 
@@ -42,7 +42,7 @@ async def protein_banana_strawberry(
     await callback.message.answer_photo(
         photo=FSInputFile(PRODUCTS["banana_strawberry"]["image"]),
         caption=PRODUCTS["banana_strawberry"]["text"],
-        reply_markup=back_to_protein()
+        reply_markup=back_to_one()
     )
 
 
@@ -55,7 +55,7 @@ async def protein_milk_chocolate(
     await callback.message.answer_photo(
         photo=FSInputFile(PRODUCTS["milk_chocolate"]["image"]),
         caption=PRODUCTS["milk_chocolate"]["text"],
-        reply_markup=back_to_protein()
+        reply_markup=back_to_one()
     )
 
 
@@ -68,10 +68,21 @@ async def protein_pina_colado_protein(
     await callback.message.answer_photo(
         photo=FSInputFile(PRODUCTS["pina_colado"]["image"]),
         caption=PRODUCTS["pina_colado"]["text"],
-        reply_markup=back_to_protein()
+        reply_markup=back_to_one()
     )
 
-@router.callback_query(F.data == "back_protein")
+@router.callback_query(F.data == "back_one_category")
+async def back_to_categories_handler(
+    callback: CallbackQuery
+):
+    await callback.answer()
+
+    await callback.message.answer(
+        text="Выберите категорию: ",
+        reply_markup=get_catalog_categories()
+        )
+
+@router.callback_query(F.data == "back_one")
 async def back_to_protein_handler(
     callback: CallbackQuery
 ):
