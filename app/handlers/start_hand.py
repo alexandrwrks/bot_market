@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from app.keyboards.start import get_start_inline_keyboard
-from app.models.users import users_manager
+from app.models.users_db import users_manager
 
 
 

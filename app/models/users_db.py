@@ -1,21 +1,7 @@
 import aiosqlite
+
 from aiogram.types import User as TgUser
-import logging
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-
-DATA_BASE_NAME = os.getenv("DATA_BASE_NAME")
-
-logging.basicConfig(
-    filename="test_api.log",
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
-
-logger = logging.getLogger(__name__)
+from config_db import logger, DATA_BASE_NAME
 
 class UsersManager:
     def __init__(self):

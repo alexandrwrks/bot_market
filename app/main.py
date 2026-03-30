@@ -1,12 +1,13 @@
 import asyncio
 import os
+import app.models.config_db
 
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 
 from app.services.config_hand import routers
-from app.models.catalog import catalog_manager
-from app.models.users import users_manager
+from app.models.products_db import catalog_manager
+from app.models.users_db import users_manager
 
 
 load_dotenv()
