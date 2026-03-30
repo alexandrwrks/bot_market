@@ -12,7 +12,7 @@ router.include_router(protein_router)
 async def get_catalog(
     callback: CallbackQuery
 ):
-    await callback.message.answer(
+    await callback.message.edit_text(
         text="Выберите компанию:",
         reply_markup=get_catalog_company()
     )
@@ -24,7 +24,7 @@ async def get_catalog(
 async def get_categories_of_catalog(
     callback: CallbackQuery
 ):
-    await callback.message.answer(
+    await callback.message.edit_text(
         text="Выберите категорию: ",
         reply_markup=get_catalog_categories()
     )
