@@ -24,7 +24,7 @@ async def back_to_company_handler(
 ):
     await callback.answer()
 
-    await callback.message.answer(
+    await callback.message.edit_text(
         text="Выберите компанию:",
         reply_markup=get_catalog_company()
         )

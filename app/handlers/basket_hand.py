@@ -17,7 +17,7 @@ async def get_basket(
             "Доставка СДЭК:\n"
             "Минимальная сумма заказа - 5000 рублей\n")
 
-    await callback.message.answer(
+    await callback.message.edit_text(
         text=text,
         reply_markup=get_user_basket()
     )

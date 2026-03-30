@@ -27,7 +27,7 @@ async def get_categories_protein_keyboards(
 ):
     await callback.answer()
     
-    await callback.message.answer(
+    await callback.message.edit_text(
         text="Выберите вкус:",
         reply_markup=get_protein()
     )

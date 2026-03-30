@@ -12,8 +12,10 @@ async def back_to_start_handler(
 ):
     await callback.answer()
 
-    await callback.message.answer(
-        text="Главное меню:",
+    await callback.message.edit_text(
+        text = ("Добро пожаловать в SportMarketBot!\n"
+           "Этот бот позволяет приобрести товары\n"
+           "из каталога с доставкой по всей Росии.\n"),
         reply_markup=get_start_inline_keyboard()
         )
     
@@ -23,7 +25,7 @@ async def back_to_company_handler(
 ):
     await callback.answer()
 
-    await callback.message.answer(
+    await callback.message.edit_text(
         text="Выберите компанию:",
         reply_markup=get_catalog_company()
         )
@@ -34,7 +36,7 @@ async def back_to_categories_handler(
 ):
     await callback.answer()
 
-    await callback.message.answer(
+    await callback.message.edit_text(
         text="Выберите категорию: ",
         reply_markup=get_catalog_categories()
         )
