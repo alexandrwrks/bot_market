@@ -22,7 +22,29 @@ class Category:
     name: str
     slug: str
 
-class TestTables:
+# class TestExecuteTable:
+#     def __init__(self):
+#         self.db_name = DATA_BASE_NAME
+
+#     async def execute_request(self, query: str, params: tuple, fetch_one = False, fetch_all = False):
+#         try:
+
+#             async with aiosqlite.connect(self.db_name) as db:
+#                 cursor = await db.execute(query, params)
+
+#                 if fetch_one:
+#                     await cursor.fetchone()
+
+#                 if fetch_all:
+#                     await cursor.fetchall()
+
+#             await db.commit()
+
+#         except aiosqlite.Error as e:
+#             print(f"Ошибка {e}")
+
+
+class TestCategpryTable:
     def __init__(self):
         self.db_name = DATA_BASE_NAME
 
@@ -34,10 +56,23 @@ class TestTables:
                     name TEXT NOT NULL,
                     slug TEXT UNIQUE NOT NULL,
                     is_active BOOLEAN DEFAULT TRUE,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
             await db.commit()
+
+    async def create_category(self, categories_info: Category):
+        async with aiosqlite.connect(self.db_name) as db:
+            await db.execute("INSERT INTO TestCategories (name, slug) VALUES (?, ?)", 
+                             (categories_info.name, categories_info.slug))
+
+            await db.commit()
+
+
+class TestProductTable:
+    def __init__(self):
+        self.db_name = DATA_BASE_NAME
 
     async def init_products_table(self):
         async with aiosqlite.connect(self.db_name) as db:
@@ -59,13 +94,6 @@ class TestTables:
 
             await db.commit()
 
-    async def create_category(self, categories_info: Category):
-        async with aiosqlite.connect(self.db_name) as db:
-            await db.execute("INSERT INTO TestCategories (name, slug) VALUES (?, ?)", 
-                             (categories_info.name, categories_info.slug))
-
-            await db.commit()
-
     async def create_product(self, product_info: Product):
         async with aiosqlite.connect(self.db_name) as db:
             await db.execute("INSERT INTO TestProduct (category_id, name, description, price, photo_path, quantity) VALUES (?, ?, ?, ?, ?, ?)", 
@@ -74,29 +102,63 @@ class TestTables:
 
             print(f"Успешное добавление товара!")
             await db.commit()
+    
+    async def get_product_by_category_id(self, category_id: int):
+        try:
+            async with aiosqlite.connect(self.db_name) as db:
+                cursor = await db.execute("""
+                                SELECT name, description, price, photo_path, quantity
+                                FROM TestProduct WHERE category_id = ? AND is_active = TRUE
+                                """, (category_id,))
+                
+                result = await cursor.fetchall()
 
+                return result
+            
+        except aiosqlite.Error as e:
+            print(f"Ошибка чтения: {e}")
 
-test_categories = Category("Протеин", "protein")
+    async def get_product_names_by_category_id(self, category_id: int):
+        try:
+            async with aiosqlite.connect(self.db_name) as db:
+                cursor = await db.execute("SELECT id, name FROM TestProduct WHERE category_id = ? AND is_active = TRUE", (category_id,))
 
+                result = await cursor.fetchall()
 
-test_products1 = Product(1, "Banana-Strawberry Protein 450 gr", "Протеин со вкусомм банана и клубники", 400, r"images\protein\primekraft_protein_banana_strawberry_450.jpg", 10)
-test_products2 = Product(1, "Banana-Strawberry Protein 900 gr", "Протеин со вкусомм банана и клубники", 710, r"images\protein\primekraft_protein_banana_strawberry_900.jpg", 5)
-test_products3 = Product(1, "Milk Chocolate Protein 900 gr", "Протеин со вкусомм молочного шоколада", 720, r"images\protein\primekraft_protein_chocolate_900.jpg", 7)
-test_products4 = Product(1, "Pina Colado Protein 900 gr", "Протеин со вкусомм пина коладо", 700, r"images\protein\primekraft_protein_pina_colado_900.jpg", 8,)
+                return result
+            
+        except aiosqlite.Error as e:
+            print(f"Ошибка чтения: {e}")
+            return []
+
+    async def get_product_by_id(self, product_id: int):
+        try:
+            async with aiosqlite.connect(self.db_name) as db:
+                cursor = await db.execute("""
+                        SELECT name, description, price, photo_path, quantity
+                        FROM TestProduct
+                        WHERE id = ? AND is_active = TRUE
+                """, (product_id,))
+
+                result = await cursor.fetchall()
+
+                return result
+            
+        except aiosqlite.Error as e:
+            print(f"Ошибка чтения данных: {e}")
+            return None
+
+    async def output_info(self, result: list):
+        for row in result:
+            print(row)
 
 
 async def main():
-    test = TestTables()
+    tpt = TestProductTable()
 
-    await test.init_categories_table()
-    await test.init_products_table()
+    result = await tpt.get_product_names_by_category_id(1)
 
-    await test.create_category(test_categories)
-
-    await test.create_product(test_products1)
-    await test.create_product(test_products2)
-    await test.create_product(test_products3)
-    await test.create_product(test_products4)
+    await tpt.output_info(result)
 
 if __name__ == "__main__":
     asyncio.run(main())

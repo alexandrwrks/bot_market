@@ -1,6 +1,6 @@
 import aiosqlite
 
-from config_db import logger, DATA_BASE_NAME
+from app.models.config_db import logger, DATA_BASE_NAME
 
 
 class ProductManager:
@@ -27,7 +27,7 @@ class ProductManager:
                 await db.commit()
 
         except aiosqlite.Error as e:
-            logger  .error(f"Ошибка инициализация БД: {e}")
+            logger.error(f"Ошибка инициализация БД: {e}")
 
     async def get_option_products(self):
         try:

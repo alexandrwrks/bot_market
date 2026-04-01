@@ -1,7 +1,7 @@
 import aiosqlite
 
 from aiogram.types import User as TgUser
-from config_db import logger, DATA_BASE_NAME
+from app.models.config_db import logger, DATA_BASE_NAME
 
 class UsersManager:
     def __init__(self):

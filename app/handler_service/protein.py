@@ -1,7 +1,9 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, FSInputFile
-from app.keyboards.categories import get_catalog_categories, get_protein
+from app.keyboards.categories import get_catalog_categories, get_protein, get_protein_options
 from app.keyboards.Back import back_to_one
+
+from tests.db_test import TestProductTable
 
 router = Router()
 
@@ -22,54 +24,50 @@ PRODUCTS = {
 
 
 @router.callback_query(F.data == "protein_btn")
-async def get_categories_protein_keyboards(
+async def show_protein_tastes(
     callback: CallbackQuery
 ):
-    await callback.answer()
+    tpt = TestProductTable()
+
+    products = await tpt.get_product_names_by_category_id(1)
     
     await callback.message.edit_text(
         text="Выберите вкус:",
-        reply_markup=get_protein()
+        reply_markup=get_protein_options(products)
     )
 
-
-@router.callback_query(F.data == "protein:banana_strawberry")
-async def protein_banana_strawberry(
-    callback: CallbackQuery
-):
     await callback.answer()
 
-    await callback.message.answer_photo(
-        photo=FSInputFile(PRODUCTS["banana_strawberry"]["image"]),
-        caption=PRODUCTS["banana_strawberry"]["text"],
-        reply_markup=back_to_one()
-    )
 
-
-@router.callback_query(F.data == "protein:milk_chocolate")
-async def protein_milk_chocolate(
-    callback: CallbackQuery
-):
+@router.callback_query(F.data.startswith("protein:"))
+async def protein_selected(callback: CallbackQuery):
     await callback.answer()
 
-    await callback.message.answer_photo(
-        photo=FSInputFile(PRODUCTS["milk_chocolate"]["image"]),
-        caption=PRODUCTS["milk_chocolate"]["text"],
-        reply_markup=back_to_one()
+    protein_id = int(callback.data.split(":")[1])
+
+    tpt = TestProductTable()
+    product = await tpt.get_product_by_id(protein_id)
+
+    if not product:
+        await callback.answer("Товар не найден", show_alert=True)
+        return
+    
+    name, description, price, photo_path, quantity = product
+    path = FSInputFile(photo_path)
+
+    text = (
+        f"{name}\n\n"
+        f"{description}\n"
+        f"Цена: {price} руб.\n"
+        f"В наличии: {quantity}"
     )
 
-
-@router.callback_query(F.data == "protein:pina_colado")
-async def protein_pina_colado_protein(
-    callback: CallbackQuery
-):
-    await callback.answer()
-
     await callback.message.answer_photo(
-        photo=FSInputFile(PRODUCTS["pina_colado"]["image"]),
-        caption=PRODUCTS["pina_colado"]["text"],
-        reply_markup=back_to_one()
+        photo=path,
+        caption=text
     )
+
+    
 
 @router.callback_query(F.data == "back_one_category")
 async def back_to_categories_handler(

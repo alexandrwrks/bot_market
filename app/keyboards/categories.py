@@ -40,3 +40,17 @@ def get_protein():
     keyboard.button(text="🔙 Назад", callback_data="back_one_categories")
 
     return keyboard.adjust(2, 1, 1).as_markup()
+
+
+def get_protein_options(products: list[tuple]):
+    keyboard = InlineKeyboardBuilder()
+
+    for product_id, product_name in products:
+        keyboard.button(
+            text=product_name,
+            callback_data=f"protein:{product_id}"
+        )
+
+    keyboard.button(text="🔙 Назад", callback_data="back_one_categories")
+
+    return keyboard.adjust(1).as_markup()
