@@ -11,7 +11,7 @@ def back_to_one():
 def put_it_inside():
     keyboard = InlineKeyboardBuilder()
     
-    keyboard.button(text="🛒В корзину", callback_data="add_to_cart")
+    keyboard.button(text="🛒В корзину", callback_data="")
 
     return keyboard.adjust().as_markup()
 

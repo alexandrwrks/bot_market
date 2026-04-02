@@ -135,7 +135,7 @@ class TestProductTable:
         try:
             async with aiosqlite.connect(self.db_name) as db:
                 cursor = await db.execute("""
-                        SELECT name, description, price, photo_path, quantity
+                        SELECT name, description, price, photo_path
                         FROM TestProduct
                         WHERE id = ? AND is_active = TRUE
                 """, (product_id,))

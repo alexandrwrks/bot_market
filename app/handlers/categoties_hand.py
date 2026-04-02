@@ -28,20 +28,5 @@ async def get_categories_of_catalog(
         text="Выберите категорию: ",
         reply_markup=get_catalog_categories()
     )
-
-# @router.callback_query(F.data == "primekraft_protein_btn")
-# async def get_test_protein(
-#     callback: CallbackQuery
-# ):
-#     """Выдать клавиатуру с выбором вкуса протеина"""
-#     # images = FSInputFile("images\protein\primekraft_protein_banana_strawberry.jpg")
-#     # text = ("Протени PrimeKraft со вкусом банана и клубники\n"
-#     #         "Стоимость: 400 рублей за 1 шт.")
-
-#     # await callback.message.answer_photo(
-#     #     photo=images,
-#     #     caption=text
-#     # )
-
-#     # await callback.answer()
-
+    
+    await callback.answer()
