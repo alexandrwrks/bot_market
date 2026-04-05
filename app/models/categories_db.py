@@ -23,7 +23,7 @@ class CategoriesManager:
                 await db.commit()
 
         except aiosqlite.Error as e:
-            logger.error(f"Ошибка инициализации: {e}")
+            logger.error(f"Error initialization date base: {e}")
             
     async def create_category(self, category_info: dict):
         try:
@@ -34,11 +34,10 @@ class CategoriesManager:
                 
         except aiosqlite.IntegrityError as e:
             await db.rollback()
-            logger.error(f"Ошибка уникальности: {e}")
+            logger.error(f"Uniqueness error: {e}")
             
-
         except aiosqlite.Error as e:
-            logger.error(f"Ошибка добавления категории: {e}")
+            logger.error(f"Error adding a category: {e}")
 
 
     async def get_categories_by_slag(self, slug):
@@ -50,6 +49,6 @@ class CategoriesManager:
                 return result if result else None
 
         except aiosqlite.Error as e:
-            logger.error(f"Ошибка чтения данных: {e}")
+            logger.error(f"Data reading error: {e}")
             
 categories_manager = CategoriesManager()
