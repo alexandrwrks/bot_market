@@ -1,6 +1,6 @@
 import asyncio
 import os
-import app.models.config_db
+# import app.models.config_db
 
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv

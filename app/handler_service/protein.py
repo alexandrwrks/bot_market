@@ -1,6 +1,10 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto
+<<<<<<< HEAD
 from app.keyboards.categories import get_catalog_categories, get_protein_options
+=======
+from app.keyboards.categories import get_catalog_categories,  get_protein_options
+>>>>>>> 953e1d2e5e35ac7d4bfdfa686317acb4f98bcf3d
 from app.keyboards.Back import back_to_one
 from app.keyboards.product import get_product_keyboard
 
