@@ -62,12 +62,12 @@ async def back_to_company_handler(message: Message):
 
 @bl.message(text="Гейнер")
 async def gainer_handler(message: Message):
-    await message.answer("тебе не поможет, ты не спортсмен")
+    await message.answer("товар не найден")
 
 @bl.message(text="Протеин")
 async def protein_handler(message: Message):
-    await message.answer("тебе не поможет, ты не спортсмен")
+    await message.answer("товар не найден")
 
 @bl.message(text="BCAA")
 async def bcaa_handler(message: Message):
-    await message.answer("тебе не поможет, ты не спортсмен")
+    await message.answer("товар не найден")
