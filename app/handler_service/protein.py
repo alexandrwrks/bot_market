@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto
-from app.keyboards.categories import get_catalog_categories, get_protein, get_protein_options
+from app.keyboards.categories import get_catalog_categories, get_protein_options
 from app.keyboards.Back import back_to_one
 from app.keyboards.product import get_product_keyboard
 
@@ -76,3 +76,20 @@ async def back_to_protein_handler(
         text="Выберите вкус:",
         reply_markup=get_protein()
     )
+
+# я что то добавил но временно
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+def get_protein():
+    keyboard = InlineKeyboardBuilder()
+    keyboard.button(text="Банан-клубника", callback_data="protein:banana_strawberry")
+    keyboard.button(text="Молочный шоколад", callback_data="protein:milk_chocolate")
+    keyboard.button(text="Pina Colado", callback_data="protein:pina_colado")
+    keyboard.button(text="🔙 Назад", callback_data="back_one_categories")
+    return keyboard.adjust(2).as_markup()
+
+def get_protein_options():
+    keyboard = InlineKeyboardBuilder()
+    keyboard.button(text="🔄 Поменять вкус", callback_data="back_one")
+    keyboard.button(text="🛒 В корзину", callback_data="add_to_cart")
+    return keyboard.adjust(2).as_markup()
