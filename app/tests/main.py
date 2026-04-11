@@ -1,5 +1,5 @@
 import asyncio
-from app.models.config_db import engine
+from app.models.sql.config_db import engine
 
 async def test_async_db():
     async with engine.begin() as conn:

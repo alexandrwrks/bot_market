@@ -1,13 +1,11 @@
-from __future__ import annotations
-
 import logging
 from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from tests_db.config import SessionLocal
-from tests_db.models import Category
+from app.models.orm.config_db import SessionLocal
+from app.models.orm.models import Category
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +17,7 @@ class CategoryRepo:
                     name=category_info["name"],
                     slug=category_info["slug"],
                     description=category_info.get("description"),
+                    
                 )
 
                 session.add(category)
@@ -49,3 +48,5 @@ class CategoryRepo:
             except SQLAlchemyError as e:
                 logger.error(f"Database error while reading category by slug: {e}")
                 return None
+            
+categories_repo = CategoryRepo()

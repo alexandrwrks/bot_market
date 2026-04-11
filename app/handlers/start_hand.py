@@ -2,10 +2,7 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from app.keyboards.start import get_start_inline_keyboard
-from app.models.users_db import users_manager
-
-
-
+from app.db_repo.users import user_repo
 router = Router()
 
 @router.message(Command("start"))
@@ -23,11 +20,10 @@ async def cmd_start(
         reply_markup=get_start_inline_keyboard()
     )
 
-    user_exists = await users_manager.exists_user_by_telegram_id(tg_user.id)
+    user_exists = await user_repo.exists_user_by_telegram_id(tg_user.id)
 
-
-    if not user_exists:
-        await users_manager.create_user(tg_user)
+    if user_exists is None:
+        await user_repo.create_user(tg_user)
 
 
 

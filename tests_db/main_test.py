@@ -1,7 +1,7 @@
 import asyncio
 
-from tests_db.init_db import init_db
-from tests_db.category_repo import CategoryRepo
+from app.models.orm.init_db import init_db
+from app.db_repo.categories import CategoryRepo
 
 async def main():
     await init_db()

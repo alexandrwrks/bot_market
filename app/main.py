@@ -3,21 +3,16 @@ import os
 # import app.models.config_db
 
 from aiogram import Bot, Dispatcher
-from dotenv import load_dotenv
 
 from app.services.config_hand import routers
-from app.models.products_db import catalog_manager
-from app.models.users_db import users_manager
-
-
-load_dotenv()
+from app.models.sql.products_db import catalog_manager
+from app.models.orm.init_db import init_db
 
 async def main():
     bot = Bot(os.getenv("BOT_TOKEN"))
     dp = Dispatcher()
 
-    await catalog_manager.init_db()
-    await users_manager.init_db()
+    await init_db()
 
     for router in routers:
         dp.include_router(router)

@@ -7,6 +7,7 @@ from aiogram.fsm.context import FSMContext
 router = Router()
 class NewProduct(StatesGroup):
     """FSM для добавления нового предмета в БД"""
+    category_id: int = State()
     product_name: str = State()
     product_description: str = State()
     product_price: int = State()

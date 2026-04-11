@@ -1,6 +1,6 @@
 import aiosqlite
 
-from app.models.config_db import logger, DATA_BASE_NAME
+from app.models.sql.config_db import logger, DATA_BASE_NAME
 
 
 class ProductManager:

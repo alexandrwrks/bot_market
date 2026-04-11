@@ -1,21 +1,19 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto
-from app.keyboards.categories import get_catalog_categories,  get_protein_options
+from app.keyboards.categories import get_catalog_categories, get_protein_options
 from app.keyboards.Back import back_to_one
 from app.keyboards.product import get_product_keyboard
 
-from app.tests.db_test import TestProductTable
+from app.db_repo.products import product_repo
 
 router = Router()
-
 
 @router.callback_query(F.data == "protein_btn")
 async def show_protein_tastes(
     callback: CallbackQuery
 ):
-    tpt = TestProductTable()
-
-    products = await tpt.get_product_names_by_category_id(1)
+    
+    products = await product_repo.get_product_names_by_category_id(1)
     
     await callback.message.edit_text(
         text="Выберите вкус:",
@@ -31,8 +29,7 @@ async def protein_selected(callback: CallbackQuery):
 
     protein_id = int(callback.data.split(":")[1])
 
-    tpt = TestProductTable()
-    product = await tpt.get_product_by_id(protein_id)
+    product = await product_repo.get_product_by_id(protein_id)
 
     if not product:
         await callback.answer("Товар не найден", show_alert=True)
@@ -66,13 +63,13 @@ async def back_to_categories_handler(
         reply_markup=get_catalog_categories()
         )
 
-@router.callback_query(F.data == "back_one")
-async def back_to_protein_handler(
-    callback: CallbackQuery
-):
-    await callback.answer()
+# @router.callback_query(F.data == "back_one")
+# async def back_to_protein_handler(
+#     callback: CallbackQuery
+# ):
+#     await callback.answer()
 
-    await callback.message.answer(
-        text="Выберите вкус:",
-        reply_markup=get_protein()
-    )
+#     await callback.message.answer(
+#         text="Выберите вкус:",
+#         reply_markup=get_protein_options()
+#     )
