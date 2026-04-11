@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto
-from app.keyboards.categories import get_catalog_categories, get_protein_options
+from app.keyboards.categories import get_catalog_categories,  get_protein_options
 from app.keyboards.Back import back_to_one
 from app.keyboards.product import get_product_keyboard
 
@@ -69,7 +69,7 @@ async def back_to_categories_handler(
 # ):
 #     await callback.answer()
 
-#     await callback.message.answer(
-#         text="Выберите вкус:",
-#         reply_markup=get_protein_options()
-#     )
+    await callback.message.answer(
+        text="Выберите вкус:",
+        reply_markup=get_protein()
+    )
