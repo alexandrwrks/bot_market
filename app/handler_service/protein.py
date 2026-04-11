@@ -73,3 +73,20 @@ async def back_to_categories_handler(
         text="Выберите вкус:",
         reply_markup=get_protein()
     )
+
+# я что то добавил но временно
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+def get_protein():
+    keyboard = InlineKeyboardBuilder()
+    keyboard.button(text="Банан-клубника", callback_data="protein:banana_strawberry")
+    keyboard.button(text="Молочный шоколад", callback_data="protein:milk_chocolate")
+    keyboard.button(text="Pina Colado", callback_data="protein:pina_colado")
+    keyboard.button(text="🔙 Назад", callback_data="back_one_categories")
+    return keyboard.adjust(2).as_markup()
+
+def get_protein_options():
+    keyboard = InlineKeyboardBuilder()
+    keyboard.button(text="🔄 Поменять вкус", callback_data="back_one")
+    keyboard.button(text="🛒 В корзину", callback_data="add_to_cart")
+    return keyboard.adjust(2).as_markup()
