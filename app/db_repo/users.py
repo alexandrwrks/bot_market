@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from app.models.orm.config_db import SessionLocal
+from app.models.orm.config_db import SessionLocal, logger
 from app.models.orm.models import User
 
 from aiogram.types import User as TgUser
@@ -40,14 +40,16 @@ class UserRepo:
                 logger.error(f"Database error while creating user: {e}")
                 return None
         
-    async def exists_user_by_telegram_id(self, telegram_id: int) -> Optional[User]:
+    async def exists_user_by_telegram_id(self, tg_user: TgUser) -> Optional[User]:
         async with SessionLocal() as session:
             try:
-                stmt = select(User).where(User.telegram_id == telegram_id)
-                result = await session.execute(stmt)
+                result = await session.execute(select(User).where(User.telegram_id == tg_user.id))
                 user = result.scalar_one_or_none()
                 
-                return user
+                if user is not None:
+                    return user
+                
+                new_user = await self.create_user(tg_user)
 
             except SQLAlchemyError as e:
                 logger.error(f"Read error: {e}")
