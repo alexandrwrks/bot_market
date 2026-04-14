@@ -1,32 +1,21 @@
-from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, FSInputFile
-from aiogram.filters import Command
+﻿from aiogram import F, Router
+from aiogram.types import CallbackQuery
+
 from app.keyboards.categories import get_catalog_categories
-from app.keyboards.company import get_catalog_company
-from app.handler_service.protein import router as protein_router
 
 router = Router()
-router.include_router(protein_router)
+
 
 @router.callback_query(F.data == "catalog_btn")
-async def get_catalog(
-    callback: CallbackQuery
-):
+async def get_categories_of_catalog(callback: CallbackQuery):
     await callback.message.edit_text(
-        text="Выберите компанию:",
-        reply_markup=get_catalog_company()
+        text="Выберите категорию:",
+        reply_markup=get_catalog_categories(),
     )
-
     await callback.answer()
-    
 
-@router.callback_query(F.data == "primekraft_btn")
-async def get_categories_of_catalog(
-    callback: CallbackQuery
-):
-    await callback.message.edit_text(
-        text="Выберите категорию: ",
-        reply_markup=get_catalog_categories()
-    )
-    
+
+@router.callback_query(F.data.in_({"geiner_btn", "creatin_btn", "bcaa_btn"}))
+async def not_ready_categories(callback: CallbackQuery):
     await callback.answer()
+    await callback.message.answer("Эта категория в разработке. Сейчас доступен только раздел 'Протеин'.")
