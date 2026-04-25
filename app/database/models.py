@@ -3,29 +3,18 @@ from datetime import datetime
 from sqlalchemy import Boolean, ForeignKey, Integer, String, TIMESTAMP, func, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.orm.config_db import Base
+from app.database.config import Base
 
 
 class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    telegram_id: Mapped[int] = mapped_column(Integer, unique=True, index=True, nullable=False)
-    username: Mapped[str | None] = mapped_column(String, nullable=True)
-    first_name: Mapped[str] = mapped_column(String, nullable=False)
-    last_name: Mapped[str | None] = mapped_column(String, nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    telegram_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP,
-        server_default=func.now(),
-        onupdate=func.now(),
-        nullable=False,
-    )
-
     baskets: Mapped[list["Basket"]] = relationship(back_populates="user")
-
+    orders: Mapped[list["Order"]] = relationship(back_populates="user")
 
 class Category(Base):
     __tablename__ = "categories"
@@ -61,6 +50,7 @@ class Product(Base):
 
     category: Mapped["Category"] = relationship(back_populates="products")
     basket_items: Mapped[list["BasketItem"]] = relationship(back_populates="product")
+    order_items: Mapped[list["OrderItem"]] = relationship(back_populates="product")
 
 
 class Basket(Base):
@@ -102,3 +92,38 @@ class BasketItem(Base):
 
     basket: Mapped["Basket"] = relationship(back_populates="items")
     product: Mapped["Product"] = relationship(back_populates="basket_items")
+
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    telegram_id: Mapped[int] = mapped_column(ForeignKey("users.telegram_id"), nullable=False, index=True)
+    total_price: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="created", nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP,
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    user: Mapped["User"] = relationship(back_populates="orders")
+    items: Mapped[list["OrderItem"]] = relationship(back_populates="order", cascade="all, delete-orphan")
+
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    order_id: Mapped[int] = mapped_column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
+    product_id: Mapped[int] = mapped_column(Integer, ForeignKey("products.id"), nullable=False, index=True)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    price_at_time: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now(), nullable=False)
+
+    order: Mapped["Order"] = relationship(back_populates="items")
+    product: Mapped["Product"] = relationship(back_populates="order_items")

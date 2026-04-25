@@ -1,9 +1,9 @@
 ﻿from aiogram import F, Router
 from aiogram.types import CallbackQuery
 
-from app.keyboards.categories import get_catalog_categories
-from app.keyboards.company import get_catalog_company
-from app.keyboards.start import get_start_inline_keyboard
+from app.bot.keyboards.categories import get_catalog_categories
+from app.bot.keyboards.company import get_catalog_company
+from app.bot.keyboards.start import get_start_inline_keyboard
 
 router = Router()
 

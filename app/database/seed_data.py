@@ -1,7 +1,7 @@
-﻿from sqlalchemy import select
+from sqlalchemy import select
 
-from app.models.orm.config_db import SessionLocal
-from app.models.orm.models import Category, Product
+from app.database.config import SessionLocal
+from app.database.models import Category, Product
 
 
 CATEGORIES = [
@@ -73,18 +73,18 @@ async def seed_test_data() -> None:
         for product_data in TEST_PRODUCTS:
             result = await session.execute(select(Product).where(Product.name == product_data["name"]))
             existing = result.scalar_one_or_none()
-
             if existing is not None:
                 continue
 
-            product = Product(
-                category_id=category_ids[product_data["category_slug"]],
-                name=product_data["name"],
-                description=product_data["description"],
-                price=product_data["price"],
-                quantity=product_data["quantity"],
-                photo_path=product_data["photo_path"],
+            session.add(
+                Product(
+                    category_id=category_ids[product_data["category_slug"]],
+                    name=product_data["name"],
+                    description=product_data["description"],
+                    price=product_data["price"],
+                    quantity=product_data["quantity"],
+                    photo_path=product_data["photo_path"],
+                )
             )
-            session.add(product)
 
         await session.commit()

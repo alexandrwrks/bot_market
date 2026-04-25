@@ -1,26 +1,36 @@
 import logging
+
 from typing import Optional
 
 from sqlalchemy import select, update
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.models.orm.config_db import SessionLocal
-from app.models.orm.models import Product
+from app.database.config import SessionLocal, logger
+from app.database.models import Product
 
-logger = logging.getLogger(__name__)
+from dataclasses import dataclass
+
+@dataclass
+class NewProduct:
+    category_id: int
+    name: str
+    description: str
+    price: int
+    quantity: int
+    photo_path: str
 
 
 class ProductRepo:
-    async def create_product(self, product_info: dict) -> Optional[Product]:
+    async def create_product(self, product_info: NewProduct) -> Optional[Product]:
         async with SessionLocal() as session:
             try:
                 product = Product(
-                    category_id=product_info["category_id"],
-                    name=product_info["name"],
-                    description=product_info["description"],
-                    price=product_info["price"],
-                    quantity=product_info["quantity"],
-                    photo_path=product_info["photo_path"],
+                    category_id=product_info.category_id,
+                    name=product_info.name,
+                    description=product_info.description,
+                    price=product_info.price,
+                    quantity=product_info.quantity,
+                    photo_path=product_info.photo_path,
                 )
 
                 session.add(product)

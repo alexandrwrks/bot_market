@@ -4,8 +4,8 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from app.models.orm.config_db import SessionLocal
-from app.models.orm.models import Category
+from app.database.config import SessionLocal
+from app.database.models import Category
 
 logger = logging.getLogger(__name__)
 

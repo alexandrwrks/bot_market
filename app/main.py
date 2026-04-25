@@ -4,9 +4,9 @@ import os
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 
-from app.handlers import routers
-from app.models.orm.init_db import init_db
-from app.models.orm.seed_data import seed_test_data
+from app.bot.handlers import routers
+from app.database import init_db
+from app.database.seed_data import seed_test_data
 
 load_dotenv()
 

@@ -1,4 +1,4 @@
-﻿from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
 def back_to_one():
