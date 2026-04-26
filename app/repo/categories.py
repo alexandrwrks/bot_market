@@ -2,10 +2,11 @@ import logging
 from typing import Optional
 
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.database.config import SessionLocal
-from app.database.models import Category
+from app.database.models import Category, Product
 
 logger = logging.getLogger(__name__)
 
@@ -38,13 +39,34 @@ class CategoryRepo:
     async def get_category_by_slug(self, slug: str) -> Optional[Category]:
         async with SessionLocal() as session:
             try:
-                stmt = select(Category).where(Category.slug == slug)
-                result = await session.execute(stmt)
+                result = await session.execute(
+                    select(Category)
+                    .where(Category.slug == slug)
+                )
+
                 return result.scalar_one_or_none()
 
             except SQLAlchemyError as e:
                 logger.error(f"Database error while reading category by slug: {e}")
                 return None
+            
+
+    async def get_existing_categories(self) -> list[Category]:
+        """Метод для выдачи названия категорий только тех где есть хоть какой-то товар имея именно эту категорию"""
+        async with SessionLocal() as session:
+            result = await session.execute(
+                select(Category)
+                .join(Product, Product.category_id == Category.id)
+                .where(
+                    Category.is_active == True,
+                    Product.is_active == True,
+                    Product.quantity > 0
+                )
+                .distinct()
+                .order_by(Category.id)
+            )
+
+            return list(result.scalars().all())
 
 
 categories_repo = CategoryRepo()

@@ -1,10 +1,10 @@
-﻿import asyncio
+import asyncio
 import os
 
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 
-from app.bot.handlers import routers
+from app.handlers import routers
 from app.database import init_db
 from app.database.seed_data import seed_test_data
 

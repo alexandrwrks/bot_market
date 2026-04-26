@@ -1,4 +1,4 @@
-﻿# SportMarket Bot (MVP)
+# SportMarket Bot (MVP)
 
 Telegram-бот для продажи спортивного питания.
 

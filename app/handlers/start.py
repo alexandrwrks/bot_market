@@ -1,9 +1,9 @@
-﻿from aiogram import F, Router
+from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 
 from app.repo.users import user_repo
-from app.bot.keyboards.start import get_start_inline_keyboard
+from app.keyboards.start import get_start_inline_keyboard
 
 router = Router()
 

@@ -1,7 +1,7 @@
-﻿from aiogram import F, Router
+from aiogram import F, Router
 from aiogram.types import CallbackQuery
 
-from app.bot.keyboards.basket import get_user_basket
+from app.keyboards.basket import get_user_basket
 from app.repo.basket import basket_repo
 from app.repo.orders import order_repo
 

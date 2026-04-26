@@ -6,7 +6,7 @@ from sqlalchemy import select, update
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.database.config import SessionLocal, logger
-from app.database.models import Product
+from app.database.models import Product, Category
 
 from dataclasses import dataclass
 
@@ -84,5 +84,20 @@ class ProductRepo:
                 logger.error(f"Product delete error: {e}")
                 return False
 
+    async def get_products_by_slug(self, slug: str):
+        async with SessionLocal() as session:
+            result = await session.execute(
+                select(Product)
+                .join(Category, Product.category_id == Category.id)
+                .where(
+                    Category.slug == slug,
+                    Category.is_active == True,
+                    Product.is_active == True,
+                    Product.quantity > 0,
+                )
+                .order_by(Product.id)
+            )
+
+            return list(result.scalars().all())
 
 product_repo = ProductRepo()
