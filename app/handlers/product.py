@@ -6,8 +6,6 @@ from app.repo.products import product_repo
 
 router = Router()
 
-
-
 @router.callback_query(F.data.startswith("category:"))
 async def get_products_fot_categories(callback: CallbackQuery):
     """

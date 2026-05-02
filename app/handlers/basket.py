@@ -1,9 +1,14 @@
 from aiogram import F, Router
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
+from aiogram.filters import Command
+
+# from aiogram.fsm.context import FSMContext
+# from aiogram.fsm.state import State, StatesGroup
 
 from app.keyboards.basket import get_user_basket
 from app.repo.basket import basket_repo
 from app.repo.orders import order_repo
+from app.repo.products import product_repo
 
 router = Router()
 
@@ -27,11 +32,17 @@ async def _render_basket(callback: CallbackQuery) -> None:
         lines.append(f"Сумма товаров: {total_price} RUB")
         lines.append("Минимальная сумма заказа - 5000 RUB.")
         text = "\n".join(lines)
-
-    await callback.message.edit_text(
-        text=text,
-        reply_markup=get_user_basket(),
-    )
+        
+    try:
+        await callback.message.edit_text(
+            text=text,
+            reply_markup=get_user_basket(),
+        )
+    except Exception:
+        await callback.message.answer(
+            text=text,
+            reply_markup=get_user_basket()
+        )
 
 
 @router.callback_query(F.data == "basket_btn")
@@ -66,3 +77,36 @@ async def confirm_order(callback: CallbackQuery):
 
     await callback.answer(f"Заказ №{order.id} оформлен")
     await _render_basket(callback)
+
+
+"""
+Пользоватлеь нажимает на кнопку "Добавить в корзину"
+Сделать так чтобы пользователь писал своё число товаров которое ему нужно
+"""
+@router.callback_query(F.data.startswith("add_to_cart:"))
+async def add_product_to_basket(callback: CallbackQuery):
+    await callback.answer()
+
+    product_id = callback.data.split(":")[1]
+    telegram_id = callback.from_user.id
+    
+    product = await product_repo.get_product_by_id(product_id)
+
+    await callback.message.answer(
+        text=(
+            f"{product.name} успешно добавлена в корзину"
+        )
+    )
+
+    await basket_repo.add_product_to_basket(
+        telegram_id=telegram_id,
+        product_id=product_id,
+        price=product.price,
+        quantity=1
+    )
+    
+    await product_repo.update_product_quantity(
+        product_id=product_id,
+        quantity=1
+    )
+

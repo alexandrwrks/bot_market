@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 
 from app.handlers import routers
 from app.database import init_db
-from app.database.seed_data import seed_test_data
 
 load_dotenv()
 
@@ -20,7 +19,6 @@ async def main():
     dp = Dispatcher()
 
     await init_db()
-    await seed_test_data()
 
     for router in routers:
         dp.include_router(router)

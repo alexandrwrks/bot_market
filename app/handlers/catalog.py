@@ -11,17 +11,23 @@ router = Router()
 
 @router.callback_query(F.data == "catalog_btn")
 async def get_categories_of_catalog(callback: CallbackQuery):
-    categories = await categories_repo.get_existing_categories()
+    await callback.answer()
 
+    categories = await categories_repo.get_existing_categories()
     if not categories:
         await callback.message.answer("Сейчас нет доступных категорий.")
-        return
+    else:
+        try:
+            await callback.message.edit_text(
+                text="Выберите категорию:",
+                reply_markup=await get_categories_from_repo(),
+            )
+        except Exception:
+            await callback.message.edit_text(
+                text="Выберите категорию:",
+                reply_markup=await get_categories_from_repo(),
+            )
 
-    await callback.message.edit_text(
-        text="Выберите категорию:",
-        reply_markup=await get_categories_from_repo(),
-    )
-    await callback.answer()
 
 
 @router.message(Command("catalog"))

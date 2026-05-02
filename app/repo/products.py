@@ -99,5 +99,40 @@ class ProductRepo:
             )
 
             return list(result.scalars().all())
+        
+    async def get_price_by_id(self, product_id: int):
+        async with SessionLocal() as session:
+            result = await session.execute(
+                select(Product.price)
+                .where(
+                    Product.id == product_id
+                )
+            )
+
+            return result.scalar()
+        
+    async def update_product_quantity(self, product_id: int, quantity: int):
+        """Обновить количество товара"""
+        async with SessionLocal() as session:
+            try:
+                result = await session.execute(
+                    update(Product)
+                    .where(
+                        Product.id == product_id
+                    )
+                    .values(
+                        Product.quantity == Product.quantity - quantity
+                    )
+                )
+
+                await session.commit()
+
+                return 
+            
+            except SQLAlchemyError as e:
+                await session.rollback()
+                logger.error(f"Update product quantity error: {e}")
+                return None
+
 
 product_repo = ProductRepo()
