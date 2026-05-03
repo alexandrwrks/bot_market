@@ -23,7 +23,7 @@ async def get_categories_of_catalog(callback: CallbackQuery):
                 reply_markup=await get_categories_from_repo(),
             )
         except Exception:
-            await callback.message.edit_text(
+            await callback.message.answer(
                 text="Выберите категорию:",
                 reply_markup=await get_categories_from_repo(),
             )

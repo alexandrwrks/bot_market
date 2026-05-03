@@ -121,7 +121,7 @@ class ProductRepo:
                         Product.id == product_id
                     )
                     .values(
-                        Product.quantity == Product.quantity - quantity
+                        quantity = Product.quantity - quantity
                     )
                 )
 

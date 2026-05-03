@@ -118,7 +118,8 @@ class BasketRepo:
                     return 0
 
                 result = await session.execute(
-                    select(BasketItem.quantity).where(
+                    select(BasketItem.quantity)
+                    .where(
                         BasketItem.basket_id == basket.id,
                         BasketItem.product_id == product_id,
                     )

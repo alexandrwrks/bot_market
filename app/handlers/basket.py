@@ -71,10 +71,11 @@ async def clear_basket(callback: CallbackQuery):
 @router.callback_query(F.data == "confirm_order_btn")
 async def confirm_order(callback: CallbackQuery):
     order = await order_repo.create_order_from_active_basket(callback.from_user.id)
-    if order is None:
+    if order is None or order.total_price < 5000:
         await callback.answer("Не удалось оформить заказ. Корзина пуста или товара недостаточно.", show_alert=True)
         return
-
+    
+    
     await callback.answer(f"Заказ №{order.id} оформлен")
     await _render_basket(callback)
 
