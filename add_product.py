@@ -5,7 +5,7 @@ import asyncio
 
 
 async def main():
-    """Дбавляю креатин"""
+    """Добавляю продукты"""
     newProduct = NewProduct(
         category_id=2,
         name="Шоколадный",
