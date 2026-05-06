@@ -111,7 +111,7 @@ class ProductRepo:
 
             return result.scalar()
         
-    async def update_product_quantity(self, product_id: int, quantity: int):
+    async def subtract_product_quantity(self, product_id: int, quantity: int):
         """Обновить количество товара"""
         async with SessionLocal() as session:
             try:
@@ -127,12 +127,33 @@ class ProductRepo:
 
                 await session.commit()
 
-                return 
+                return True
             
             except SQLAlchemyError as e:
                 await session.rollback()
-                logger.error(f"Update product quantity error: {e}")
+                logger.error(f"Subtract product quantity error: {e}")
                 return None
 
+    async def add_product_quantity(self, product_id: int, quantity: int):
+        async with SessionLocal() as session:
+            try:
+                result = await  session.execute(
+                    update(Product)
+                    .where(
+                        Product.id == product_id,
+                    )
+                    .values(
+                        quantity = Product.quantity + quantity
+                    )
+                )
+
+                await session.commit()
+
+                return True
+
+            except SQLAlchemyError as e:
+                await session.rollback()
+                logger.error(f"Add product quantity error: {e}")
+                return None
 
 product_repo = ProductRepo()

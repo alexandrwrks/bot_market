@@ -80,34 +80,3 @@ async def confirm_order(callback: CallbackQuery):
     await _render_basket(callback)
 
 
-"""
-Пользоватлеь нажимает на кнопку "Добавить в корзину"
-Сделать так чтобы пользователь писал своё число товаров которое ему нужно
-"""
-@router.callback_query(F.data.startswith("add_to_cart:"))
-async def add_product_to_basket(callback: CallbackQuery):
-    await callback.answer()
-
-    product_id = callback.data.split(":")[1]
-    telegram_id = callback.from_user.id
-    
-    product = await product_repo.get_product_by_id(product_id)
-
-    await callback.message.answer(
-        text=(
-            f"{product.name} успешно добавлена в корзину"
-        )
-    )
-
-    await basket_repo.add_product_to_basket(
-        telegram_id=telegram_id,
-        product_id=product_id,
-        price=product.price,
-        quantity=1
-    )
-    
-    await product_repo.update_product_quantity(
-        product_id=product_id,
-        quantity=1
-    )
-

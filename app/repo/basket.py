@@ -2,7 +2,6 @@
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.config import SessionLocal, logger
 from app.database.models import Basket, BasketItem, Product
@@ -11,47 +10,38 @@ from app.database.models import Basket, BasketItem, Product
 class BasketRepo:
     async def get_or_create_active_basket(
         self,
-        telegram_id: int,
-        session: AsyncSession | None = None,
+        telegram_id: int
     ) -> Optional[Basket]:
-        own_session = session is None
-        session = session or SessionLocal()
-
-        try:
-            result = await session.execute(
-                select(Basket).where(
-                    Basket.telegram_id == telegram_id,
-                    Basket.status == "active",
+        async with SessionLocal() as session:
+            try:
+                result = await session.execute(
+                    select(Basket)
+                    .where(
+                        Basket.telegram_id == telegram_id,
+                        Basket.status == "active",
+                    )
                 )
-            )
-            basket = result.scalar_one_or_none()
+                basket = result.scalar_one_or_none()
 
-            if basket is not None:
-                return basket
+                if basket is not None:
+                    return basket
 
-            basket = Basket(telegram_id=telegram_id, status="active")
-            session.add(basket)
+                basket = Basket(telegram_id=telegram_id, status="active")
+                session.add(basket)
 
-            if own_session:
                 await session.commit()
                 await session.refresh(basket)
-            else:
-                await session.flush()
 
-            return basket
+                return basket
 
-        except SQLAlchemyError as e:
-            logger.error(f"Basket get/create error: {e}")
-            return None
-
-        finally:
-            if own_session:
-                await session.close()
+            except SQLAlchemyError as e:
+                logger.error(f"Basket get/create error: {e}")
+                return None
 
     async def get_active_user_basket(self, telegram_id: int) -> list[tuple[str, int, int]]:
         async with SessionLocal() as session:
             try:
-                basket = await self.get_or_create_active_basket(telegram_id, session=session)
+                basket = await self.get_or_create_active_basket(telegram_id)
                 if basket is None:
                     return []
 
@@ -75,7 +65,7 @@ class BasketRepo:
     ) -> Optional[BasketItem]:
         async with SessionLocal() as session:
             try:
-                basket = await self.get_or_create_active_basket(telegram_id, session=session)
+                basket = await self.get_or_create_active_basket(telegram_id)
                 if basket is None:
                     return None
 
@@ -113,7 +103,7 @@ class BasketRepo:
     async def get_product_quantity_in_active_basket(self, telegram_id: int, product_id: int) -> int:
         async with SessionLocal() as session:
             try:
-                basket = await self.get_or_create_active_basket(telegram_id, session=session)
+                basket = await self.get_or_create_active_basket(telegram_id)
                 if basket is None:
                     return 0
 
@@ -134,7 +124,7 @@ class BasketRepo:
     async def get_active_basket_total_price(self, telegram_id: int) -> int:
         async with SessionLocal() as session:
             try:
-                basket = await self.get_or_create_active_basket(telegram_id, session=session)
+                basket = await self.get_or_create_active_basket(telegram_id)
                 if basket is None:
                     return 0
 
@@ -153,7 +143,7 @@ class BasketRepo:
     async def clear_basket(self, telegram_id: int) -> bool:
         async with SessionLocal() as session:
             try:
-                basket = await self.get_or_create_active_basket(telegram_id, session=session)
+                basket = await self.get_or_create_active_basket(telegram_id)
                 if basket is None:
                     return False
 
