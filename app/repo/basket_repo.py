@@ -1,0 +1,140 @@
+﻿from typing import Optional, List
+
+from sqlalchemy import delete, func, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.database.models import Basket, BasketItem, Product
+from app.service.basket_service import BasketService
+
+
+class BasketRepo:
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get_or_create_active_basket(
+        self,
+        telegram_id: int
+    ):
+        result = await self.session.execute(
+            select(Basket).where(
+                Basket.telegram_id == telegram_id,
+                Basket.status == "active",
+            )
+        )
+
+        basket = result.scalar_one_or_none()
+
+        if basket is not None:
+            return basket
+
+        basket = Basket(telegram_id=telegram_id, status="active")
+        self.session.add(basket)
+
+        return basket
+
+
+    async def get_active_user_basket(self, telegram_id: int) -> list[tuple[str, int, int]]:
+        basket = await self.get_or_create_active_basket(telegram_id)
+        if basket is None:
+            return []
+
+        result = await self.session.execute(
+            select(Product.name, BasketItem.quantity, BasketItem.price_at_time)
+            .join(Product, Product.id == BasketItem.product_id)
+            .where(BasketItem.basket_id == basket.id)
+        )
+
+        return result.scalars().all()
+
+    async def get_product_quantity_in_active_basket(self, telegram_id: int, product_id: int) -> int:
+        basket = await self.get_or_create_active_basket(telegram_id)
+        if basket is None:
+            return 0
+
+        result = await self.session.execute(
+            select(BasketItem.quantity).where(
+                BasketItem.basket_id == basket.id,
+                BasketItem.product_id == product_id,
+            )
+        )
+
+        quantity = result.scalar_one_or_none()
+        return int(quantity or 0)
+
+    async def get_active_basket_total_price(self, telegram_id: int) -> int:
+        basket = await self.get_or_create_active_basket(telegram_id)
+        if basket is None:
+            return 0
+
+        result = await self.session.execute(
+            select(func.coalesce(func.sum(BasketItem.quantity * BasketItem.price_at_time), 0)).where(
+                BasketItem.basket_id == basket.id
+            )
+        )
+        total_price = result.scalar_one()
+        return int(total_price)
+
+    async def clear_basket(self, basket_id: int):
+        await self.session.execute(
+            delete(BasketItem).where(
+                BasketItem.basket_id == basket_id
+            )
+        )
+
+    async def get_basket_id_by_id(self, telegram_id: int):
+        result = await self.session.execute(
+          select(Basket.id).where(
+              Basket.telegram_id == telegram_id,
+              Basket.status == "active",
+          )
+        )
+
+        basket_id = result.scalar_one_or_none()
+
+        return basket_id
+
+    async def add_product(
+            self, basket_id: int, product_id: int, price: int, quantity: int
+    ) -> None:
+        """Добавляем товар в корзину пользователя с проверкой на наличие такого же товара"""
+        result = await self.session.execute(
+            select(BasketItem).where(
+                BasketItem.basket_id == basket_id,
+                BasketItem.product_id == product_id,
+            )
+        )
+
+        basket_item = result.scalar_one_or_none()
+
+        if basket_item is not None:
+            basket_item.quantity += quantity
+            basket_item.price_at_time = price
+            return
+
+        basket_item = BasketItem(
+            basket_id=basket_id,
+            product_id=product_id,
+            quantity=quantity,
+            price_at_time=price,
+        )
+
+        self.session.add(basket_item)
+
+    async def remove_product(
+            self, basket_id: int, product_id: int
+    ) -> None:
+        await self.session.execute(
+            delete(BasketItem).where(
+                BasketItem.basket_id == basket_id,
+                BasketItem.product_id == product_id,
+            )
+        )
+
+    async def get_products_in_active_basket(self, basket_id: int) -> List[BasketItem]:
+        result = await self.session.execute(
+            select(BasketItem).where(
+                BasketItem.basket_id == basket_id,
+            )
+        )
+
+        return list(result.scalars().all())
+

@@ -3,8 +3,8 @@ from aiogram.types import CallbackQuery, FSInputFile, Message
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from app.keyboards.product import products_keyboard, get_product_keyboard
-from app.repo.products import product_repo
-from app.repo.basket import basket_repo
+from app.repo.product_repo import product_repo
+from app.repo.basket_repo import basket_repo
 
 router = Router()
 

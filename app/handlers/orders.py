@@ -2,7 +2,7 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery
 
 from app.keyboards.orders import get_user_orders
-from app.repo.orders import order_repo
+from app.repo.order_repo import order_repo
 
 router = Router()
 
