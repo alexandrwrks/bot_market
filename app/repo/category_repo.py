@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import Category, Product
 
+
 class CategoryRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -22,8 +23,7 @@ class CategoryRepo:
 
     async def get_category_by_slug(self, slug: str) -> Optional[Category]:
         result = await self.session.execute(
-            select(Category)
-            .where(Category.slug == slug)
+            select(Category).where(Category.slug == slug)
         )
 
         return result.scalar_one_or_none()
@@ -36,7 +36,7 @@ class CategoryRepo:
             .where(
                 Category.is_active == True,
                 Product.is_active == True,
-                Product.quantity > 0
+                Product.quantity > 0,
             )
             .distinct()
             .order_by(Category.id)

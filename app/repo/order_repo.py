@@ -9,13 +9,13 @@ class OrderRepo:
         self.session = session
 
     async def create_order_from_active_basket(self, basket_id: int):
-        new_order = Order(
-        )
+        new_order = Order()
         return new_order
 
     async def get_user_orders(self, telegram_id: int):
         result = await self.session.execute(
-            select(Order.id, Order.total_price, Order.status).where(
+            select(Order.id, Order.total_price, Order.status)
+            .where(
                 Order.telegram_id == telegram_id,
             )
             .order_by(Order.created_at.desc())

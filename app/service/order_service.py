@@ -7,9 +7,7 @@ from app.repo.basket_repo import BasketRepo
 
 
 class OrderService:
-    async def create_order(
-            self, telegram_id: int
-    ):
+    async def create_order(self, telegram_id: int):
         async with SessionLocal() as session:
             try:
                 async with session.begin():
@@ -20,7 +18,6 @@ class OrderService:
             except Exception as e:
                 logger.error(e)
                 raise
-
 
     async def get_user_orders(self, telegram_id: int):
         """Выдаём все заказы которые есть у пользователя"""
@@ -39,10 +36,7 @@ class OrderService:
                 return []
 
             except Exception:
-                logger.exception(
-                    "Ошибка выдачи заказов пользователя=%s",
-                    telegram_id
-                )
+                logger.exception("Ошибка выдачи заказов пользователя=%s", telegram_id)
                 return []
 
     async def get_order_details(self, telegram_id: int, order_id: int):
@@ -50,8 +44,7 @@ class OrderService:
             order_repo = OrderRepo(session)
             try:
                 order_items = await order_repo.get_order_details(
-                    telegram_id=telegram_id,
-                    order_id=order_id
+                    telegram_id=telegram_id, order_id=order_id
                 )
 
                 if not order_items:
@@ -64,12 +57,9 @@ class OrderService:
 
             except Exception:
                 logger.exception(
-                    "Ошибка выдачи заказа=%s пользователю=%s",
-                    order_id,
-                    telegram_id
+                    "Ошибка выдачи заказа=%s пользователю=%s", order_id, telegram_id
                 )
                 return []
-
 
 
 order_service = OrderService()

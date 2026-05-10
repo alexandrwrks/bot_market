@@ -15,9 +15,7 @@ class UserService:
                         await user_repo.create_user(telegram_id)
 
             except Exception:
-                logger.exception(
-                    "Ошибка добавления пользователя=%s",
-                    telegram_id
-                )
+                logger.exception("Ошибка добавления пользователя=%s", telegram_id)
+
 
 user_service = UserService()

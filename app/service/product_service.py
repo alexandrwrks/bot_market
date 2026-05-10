@@ -1,11 +1,16 @@
 from app.database.config import SessionLocal, logger
-from app.exception.product_ex import NotFoundProductError, NotEnoughProductQuantityError, NoProductsInCategoryError
+from app.exception.product_ex import (
+    NotFoundProductError,
+    NotEnoughProductQuantityError,
+    NoProductsInCategoryError,
+)
 from app.repo.product_repo import ProductRepo
 
 
 class ProductService:
     async def get_products_by_category(
-            self, slug: str,
+        self,
+        slug: str,
     ):
         """
         router -> category:
@@ -22,9 +27,7 @@ class ProductService:
 
             return products
 
-    async def get_information_about_product(
-            self, product_id: int
-    ):
+    async def get_information_about_product(self, product_id: int):
         async with SessionLocal() as session:
             product_repo = ProductRepo(session)
 
@@ -44,8 +47,7 @@ class ProductService:
 
                 except Exception:
                     logger.exception(
-                        "Не удалось достать информацию о товаре=%s",
-                        product_id
+                        "Не удалось достать информацию о товаре=%s", product_id
                     )
                     raise NotFoundProductError()
 

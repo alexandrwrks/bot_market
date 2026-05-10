@@ -7,7 +7,7 @@ from app.exception.basket_ex import (
     AddProductToBasketError,
     NotEnoughProductQuantityError,
     NotProductsInBasket,
-    RemoveProductFromBasket
+    RemoveProductFromBasket,
 )
 from app.exception.product_ex import NotFoundProductError
 
@@ -15,16 +15,18 @@ from app.exception.user_ex import NotFoundUserError
 
 from dataclasses import dataclass
 
+
 @dataclass
 class ProductCartInfo:
     name: str
     available: int
 
+
 class BasketService:
     async def get_product_for_cart_input(
-            self,
-            telegram_id: int,
-            product_id: int,
+        self,
+        telegram_id: int,
+        product_id: int,
     ) -> ProductCartInfo:
         async with SessionLocal() as session:
             basket_repo = BasketRepo(session)
@@ -36,8 +38,7 @@ class BasketService:
                 raise NotFoundProductError()
 
             in_cart = await basket_repo.get_product_quantity_in_active_basket(
-                telegram_id=telegram_id,
-                product_id=product_id
+                telegram_id=telegram_id, product_id=product_id
             )
 
             available = product.quantity - in_cart
@@ -51,7 +52,7 @@ class BasketService:
             )
 
     async def add_product_to_basket(
-            self,   telegram_id: int, product_id: int, quantity: int
+        self, telegram_id: int, product_id: int, quantity: int
     ):
         async with SessionLocal() as session:
             try:
@@ -71,22 +72,21 @@ class BasketService:
                         raise NotEnoughProductQuantityError()
 
                     await product_repo.remove_quantity(
-                        product_id=product_id,
-                        quantity=quantity
+                        product_id=product_id, quantity=quantity
                     )
 
                     await basket_repo.add_product(
                         basket_id=basket.id,
                         product_id=product_id,
                         price=product.price,
-                        quantity=quantity
+                        quantity=quantity,
                     )
 
                 logger.info(
                     "Пользователь %s добавил товар %s, %s шт.",
                     telegram_id,
                     product_id,
-                    quantity
+                    quantity,
                 )
 
             except (NotFoundProductError, NotEnoughProductQuantityError):
@@ -97,13 +97,11 @@ class BasketService:
                     "Не удалось добавить товары в корзину: telegram_id=%s, product_id=%s, quantity=%s",
                     telegram_id,
                     product_id,
-                    quantity
+                    quantity,
                 )
                 raise AddProductToBasketError()
 
-    async def remove_product_from_basket(
-            self, telegram_id: int, product_id: int
-    ):
+    async def remove_product_from_basket(self, telegram_id: int, product_id: int):
         """Полностью убираю товар с корзины пользователя с id=product_id"""
         async with SessionLocal() as session:
             try:
@@ -115,19 +113,18 @@ class BasketService:
                     if basket_id is None:
                         raise NotFoundUserError()
 
-                    quantity_in_basket = await basket_repo.get_product_quantity_in_active_basket(
-                        telegram_id=telegram_id,
-                        product_id=product_id
+                    quantity_in_basket = (
+                        await basket_repo.get_product_quantity_in_active_basket(
+                            telegram_id=telegram_id, product_id=product_id
+                        )
                     )
 
                     if quantity_in_basket == 0:
                         raise NotProductsInBasket()
 
-
                     await basket_repo.remove_product(basket_id, product_id)
                     await product_repo.add_quantity(
-                        product_id=product_id,
-                        quantity=quantity_in_basket
+                        product_id=product_id, quantity=quantity_in_basket
                     )
 
             except Exception:
@@ -138,9 +135,7 @@ class BasketService:
                 )
                 raise RemoveProductFromBasket()
 
-    async def clear_basket(
-            self, telegram_id: int
-    ):
+    async def clear_basket(self, telegram_id: int):
         async with SessionLocal() as session:
             try:
                 async with session.begin():
@@ -151,33 +146,30 @@ class BasketService:
                     if basket_id is None:
                         raise NotFoundUserError()
 
-
-                    products = await basket_repo.get_products_in_active_basket(basket_id)
+                    products = await basket_repo.get_products_in_active_basket(
+                        basket_id
+                    )
                     if not products:
                         raise NotProductsInBasket()
 
                     for product in products:
                         await product_repo.add_quantity(
-                            product_id=product.product_id,
-                            quantity=product.quantity
+                            product_id=product.product_id, quantity=product.quantity
                         )
                     await basket_repo.clear_basket(basket_id)
 
                     logger.info(
-                        "Корзина пользователя=%s была успешна удалена",
-                        telegram_id
+                        "Корзина пользователя=%s была успешна удалена", telegram_id
                     )
 
             except Exception:
                 logger.exception(
                     "Не удалось очистить корзину пользователя: telegram_id=%s",
-                    telegram_id
+                    telegram_id,
                 )
                 raise
 
-    async def render_user_basket(
-            self, telegram_id: int
-    ):
+    async def render_user_basket(self, telegram_id: int):
         async with SessionLocal() as session:
             try:
                 basket_repo = BasketRepo(session)
@@ -192,10 +184,7 @@ class BasketService:
                 return items, total
 
             except Exception:
-                logger.exception(
-                    "Ошибка рендера корзины пользователя=%s",
-                    telegram_id
-                )
+                logger.exception("Ошибка рендера корзины пользователя=%s", telegram_id)
                 return [], 0
 
 

@@ -9,20 +9,18 @@ from app.service.order_service import order_service
 
 router = Router()
 
+
 @router.message(Command("order"))
 async def get_order_message(message: Message):
     try:
         text = "Раздел заказов в доработке."
         keyboard = get_user_orders()
 
-        await message.answer(
-            text=text,
-            reply_markup=keyboard
-        )
+        await message.answer(text=text, reply_markup=keyboard)
     except Exception:
-        await message.answer(
-            "Ошибка сервера. Попробуйте позже"
-        )
+        await message.answer("Ошибка сервера. Попробуйте позже")
+
+
 @router.callback_query(F.data == "orders_btn")
 async def get_orders(callback: CallbackQuery):
     await callback.answer()
@@ -30,20 +28,16 @@ async def get_orders(callback: CallbackQuery):
     orders = await order_service.get_user_orders(callback.from_user.id)
 
     if not orders:
-        await callback.answer(
-            text="У Вас пока нет заказов.",
-            show_alert=True
-        )
+        await callback.answer(text="У Вас пока нет заказов.", show_alert=True)
     else:
-        await callback.message.edit_text(
-            text="Ваши заказы:"
-        )
+        await callback.message.edit_text(text="Ваши заказы:")
 
         for order_id, total_price, status in orders:
             await callback.message.answer(
                 text=f"ЗАКАЗ №{order_id}",
                 reply_markup=get_user_orders([(order_id, total_price, status)]),
             )
+
 
 @router.callback_query(F.data.startswith("order:"))
 async def get_order_details(callback: CallbackQuery):
@@ -57,15 +51,11 @@ async def get_order_details(callback: CallbackQuery):
         return
 
     order_items = await order_service.get_order_details(
-        telegram_id=callback.from_user.id,
-        order_id=order_id
+        telegram_id=callback.from_user.id, order_id=order_id
     )
 
     if not order_items:
-        await callback.answer(
-            text="Заказ не найден Попробуйте позже",
-            show_alert=True
-        )
+        await callback.answer(text="Заказ не найден Попробуйте позже", show_alert=True)
         return
 
     first_item = order_items[0]
@@ -82,9 +72,7 @@ async def get_order_details(callback: CallbackQuery):
     ]
 
     for _, _, _, product_name, quantity, price in order_items:
-        lines.append(
-            f"- {product_name}: {quantity} x {price} RUB"
-        )
+        lines.append(f"- {product_name}: {quantity} x {price} RUB")
 
     text = "\n".join(lines)
 

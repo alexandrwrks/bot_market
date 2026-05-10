@@ -9,6 +9,7 @@ from app.service.category_service import category_service
 
 router = Router()
 
+
 @router.callback_query(F.data == "catalog_btn")
 async def get_categories_of_catalog(callback: CallbackQuery):
     await callback.answer()
@@ -33,6 +34,7 @@ async def get_categories_of_catalog(callback: CallbackQuery):
     except NotCategoryError:
         await callback.message.answer("Сейчас нет доступных категорий.")
 
+
 @router.message(Command("catalog"))
 async def get_exists_category(message: Message):
     try:
@@ -40,12 +42,7 @@ async def get_exists_category(message: Message):
 
         keyboard = get_exists_catalog(categories)
 
-        await message.answer(
-            text="Выберите категорию:",
-            reply_markup=keyboard
-        )
+        await message.answer(text="Выберите категорию:", reply_markup=keyboard)
 
     except NotCategoryError:
         await message.answer("Сейчас нет доступных категорий")
-
-

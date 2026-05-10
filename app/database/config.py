@@ -15,11 +15,7 @@ if not SQLITE_DATABASE_URL:
 
 engine = create_async_engine(SQLITE_DATABASE_URL)
 
-SessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False
-)
+SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
 class Base(DeclarativeBase):
@@ -34,4 +30,3 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-

@@ -17,15 +17,11 @@ async def _render_basket(callback: CallbackQuery) -> None:
     telegram_id = callback.from_user.id
 
     try:
-
         items, total = await basket_service.render_user_basket(telegram_id)
         keyboard = get_user_basket()
 
         if not items:
-            text = (
-                "Ваша корзина пуста.\n"
-                "Минимальная сумма заказа - 5000 RUB."
-            )
+            text = "Ваша корзина пуста.\nМинимальная сумма заказа - 5000 RUB."
 
         else:
             text = "Ваша корзина\n"
@@ -48,9 +44,7 @@ async def _render_basket(callback: CallbackQuery) -> None:
             )
 
     except NotFoundProductError:
-        await callback.answer(
-            text="Ошибка рендера корзины. Попробуйте позже"
-        )
+        await callback.answer(text="Ошибка рендера корзины. Попробуйте позже")
 
 
 @router.callback_query(F.data == "basket_btn")
@@ -72,7 +66,6 @@ async def clear_basket(callback: CallbackQuery):
     telegram_id = callback.from_user.id
 
     try:
-
         await basket_service.clear_basket(telegram_id)
 
         await callback.answer("Корзина успешна очищена")
@@ -80,19 +73,10 @@ async def clear_basket(callback: CallbackQuery):
         await _render_basket(callback)
 
     except NotFoundUserError:
-        await callback.answer(
-            text="Не найден пользователь",
-            show_alert=True
-        )
+        await callback.answer(text="Не найден пользователь", show_alert=True)
 
     except NotProductsInBasket:
-        await callback.answer(
-            text="Товаров нет в корзине",
-            show_alert=True
-        )
+        await callback.answer(text="Товаров нет в корзине", show_alert=True)
 
     except ClearBasketError:
-        await callback.answer(
-            text="Ошибка очистки корзины",
-            show_alert=True
-        )
+        await callback.answer(text="Ошибка очистки корзины", show_alert=True)
