@@ -1,5 +1,19 @@
+# Virtual env
 .venv
-.env
+
+# Python
 __pycache__
+*.pyc
+
+# Enviroment
+.env
+
+# Logs
 *.log
-.idea
+
+# Database
+# *.db
+
+# IDE
+.idea/
+.vscode/

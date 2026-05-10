@@ -9,27 +9,24 @@ class UserRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create_user(self, telegram_id: int) -> Optional[User]:
+    async def create_user(self, telegram_id: int):
             user = User(
                 telegram_id=telegram_id
             )
 
             self.session.add(user)
-            return user
 
-    async def get_or_create_user(self, telegram_id: int):
+    async def get_user(self, telegram_id: int):
         result = await self.session.execute(
             select(User)
             .where(
                 User.telegram_id == telegram_id
             ))
-        exists_user = result.scalar_one_or_none()
-        if exists_user is None:
-            await self.create_user(telegram_id)
 
-        return True
+        return result.scalar_one_or_none()
 
-    async def update_use_info(
+
+    async def update_user_info(
         self
     ):
         ...

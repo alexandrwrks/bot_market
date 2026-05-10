@@ -2,8 +2,9 @@ from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 
-from app.repo.user_repo import user_repo
 from app.keyboards.start import get_start_inline_keyboard
+
+from app.service.user_service import user_service
 
 router = Router()
 
@@ -17,7 +18,8 @@ WELCOME_TEXT = (
 @router.message(Command("start"))
 async def cmd_start_message(message: Message):
     telegram_id = message.from_user.id
-    await user_repo.get_or_create_user(telegram_id)
+
+    await user_service.existing_user(telegram_id)
 
     await message.answer(
         text=WELCOME_TEXT,
@@ -27,8 +29,16 @@ async def cmd_start_message(message: Message):
 @router.callback_query(F.data == "start_btn")
 async def cmd_start_callback(callback: CallbackQuery):
     await callback.answer()
+    keyboard = get_start_inline_keyboard()
 
-    await callback.message.edit_text(
-        text=WELCOME_TEXT,
-        reply_markup=get_start_inline_keyboard(),
-    )
+    try:
+        await callback.message.edit_text(
+            text=WELCOME_TEXT,
+            reply_markup=keyboard,
+        )
+
+    except Exception:
+        await callback.message.answer(
+            text=WELCOME_TEXT,
+            reply_markup=keyboard,
+        )

@@ -3,3 +3,7 @@ class OrderError(Exception):
 
 class PlaceOrderError(OrderError):
     pass
+
+class NotUserOrder(OrderError):
+    # Не найдены заказы пользователя
+    pass

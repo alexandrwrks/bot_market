@@ -1,8 +1,5 @@
-from sqlalchemy.util import await_only
-
 from app.database.config import SessionLocal, logger
 from app.exception.product_ex import NotFoundProductError, NotEnoughProductQuantityError, NoProductsInCategoryError
-from app.repo.basket_repo import BasketRepo
 from app.repo.product_repo import ProductRepo
 
 
@@ -18,7 +15,7 @@ class ProductService:
             product_repo = ProductRepo(session)
 
             products = await product_repo.get_products_by_slug(slug)
-            if products is None:
+            if not products:
                 raise NoProductsInCategoryError()
 
             logger.info("Успешное получение товаров по категории")
@@ -30,13 +27,12 @@ class ProductService:
     ):
         async with SessionLocal() as session:
             product_repo = ProductRepo(session)
-            basket_repo = BasketRepo(session)
 
             async with session.begin():
                 try:
                     product = await product_repo.get_product_by_id(product_id)
 
-                    if not product:
+                    if product is None:
                         raise NotFoundProductError()
 
                     available = product.quantity
@@ -47,11 +43,11 @@ class ProductService:
                     return product
 
                 except Exception:
-                    await session.rollback()
                     logger.exception(
                         "Не удалось достать информацию о товаре=%s",
                         product_id
                     )
+                    raise NotFoundProductError()
 
 
 product_service = ProductService()

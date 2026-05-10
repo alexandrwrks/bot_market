@@ -57,9 +57,7 @@ class ProductRepo:
             )
         )
 
-        product = result.scalar_one_or_none()
-
-        return product
+        return result.scalar_one_or_none()
 
     async def soft_product_delete(self, product_id: int):
         await self.session.execute(

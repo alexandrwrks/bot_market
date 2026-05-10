@@ -161,7 +161,12 @@ class BasketService:
                             product_id=product.product_id,
                             quantity=product.quantity
                         )
-                    await basket_repo.clear_basket(telegram_id)
+                    await basket_repo.clear_basket(basket_id)
+
+                    logger.info(
+                        "Корзина пользователя=%s была успешна удалена",
+                        telegram_id
+                    )
 
             except Exception:
                 logger.exception(
@@ -169,6 +174,29 @@ class BasketService:
                     telegram_id
                 )
                 raise
+
+    async def render_user_basket(
+            self, telegram_id: int
+    ):
+        async with SessionLocal() as session:
+            try:
+                basket_repo = BasketRepo(session)
+
+                items = await basket_repo.get_basket_summary(telegram_id)
+
+                if items is None:
+                    raise NotFoundProductError()
+
+                total = sum(quantity * price for _, quantity, price in items)
+
+                return items, total
+
+            except Exception:
+                logger.exception(
+                    "Ошибка рендера корзины пользователя=%s",
+                    telegram_id
+                )
+                return [], 0
 
 
 basket_service = BasketService()

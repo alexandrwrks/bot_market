@@ -1,0 +1,9 @@
+services:
+  bot:
+    build: .
+    container_name: sport_market_bot
+    env_file:
+      - .env
+    volumes:
+      - ./demo.db:/app/demo.db
+    restart: unless-stopped

@@ -1,0 +1,4 @@
+# Сделал каки-то изменения с моделями/базой данных
+alembic revision --autogenerate -m "add something"
+# Использовать изменения
+alembic upgrade head

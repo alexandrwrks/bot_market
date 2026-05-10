@@ -1,7 +1,7 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
-def get_user_orders(orders: list[tuple[int, int, str]]):
+def get_user_orders(orders):
     keyboard = InlineKeyboardBuilder()
 
     if orders:

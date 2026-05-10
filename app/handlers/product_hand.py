@@ -57,7 +57,8 @@ async def get_information_about_product(callback: CallbackQuery):
 
     try:
         product = await product_service.get_information_about_product(product_id=product_id)
-
+        if not product:
+            raise Exception()
         caption = (
             f"{product.name}\n\n"
             f"Описание: {product.description}\n\n"
@@ -68,26 +69,26 @@ async def get_information_about_product(callback: CallbackQuery):
         await callback.message.answer_photo(
             photo=FSInputFile(product.photo_path),
             caption=caption,
-            reply_markup=get_product_keyboard(slug=slug, product_id=product_id)
+            reply_markup=get_product_keyboard(slug=slug, product_id=product.id)
         )
 
     except NotFoundProductError:
         await callback.answer(
-            "Товар не найден",
+            text="Товар не найден",
             show_alert=True
         )
         return
 
     except NotEnoughProductQuantityError:
         await callback.answer(
-            "Товара нет в наличие",
+            text="Товара нет в наличие",
             show_alert=True
         )
         return
 
     except Exception:
         await callback.answer(
-            "Произошла ошибка. ПОпробуйте позже",
+            text="Произошла ошибка. ПОпробуйте позже",
             show_alert=True
         )
 

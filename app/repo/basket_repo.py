@@ -1,9 +1,6 @@
-﻿from typing import Optional, List
-
-from sqlalchemy import delete, func, select, update
+﻿from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.models import Basket, BasketItem, Product
-from app.service.basket_service import BasketService
 
 
 class BasketRepo:
@@ -30,20 +27,6 @@ class BasketRepo:
         self.session.add(basket)
 
         return basket
-
-
-    async def get_active_user_basket(self, telegram_id: int) -> list[tuple[str, int, int]]:
-        basket = await self.get_or_create_active_basket(telegram_id)
-        if basket is None:
-            return []
-
-        result = await self.session.execute(
-            select(Product.name, BasketItem.quantity, BasketItem.price_at_time)
-            .join(Product, Product.id == BasketItem.product_id)
-            .where(BasketItem.basket_id == basket.id)
-        )
-
-        return result.scalars().all()
 
     async def get_product_quantity_in_active_basket(self, telegram_id: int, product_id: int) -> int:
         basket = await self.get_or_create_active_basket(telegram_id)
@@ -129,12 +112,22 @@ class BasketRepo:
             )
         )
 
-    async def get_products_in_active_basket(self, basket_id: int) -> List[BasketItem]:
+    async def get_basket_summary(self, telegram_id: int) -> list[tuple[str, int, int]]:
         result = await self.session.execute(
-            select(BasketItem).where(
-                BasketItem.basket_id == basket_id,
+            select(
+                Product.name,
+                BasketItem.quantity,
+                BasketItem.price_at_time,
+            )
+            .join(BasketItem, BasketItem.product_id == Product.id)
+            .join(Basket, Basket.id == BasketItem.basket_id)
+            .where(
+                Basket.telegram_id == telegram_id,
+                Basket.status == "active",
             )
         )
 
-        return list(result.scalars().all())
-
+        return [
+            (name, quantity, price)
+            for name, quantity, price in result.all()
+        ]
