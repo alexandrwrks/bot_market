@@ -146,9 +146,7 @@ class BasketService:
                     if basket_id is None:
                         raise NotFoundUserError()
 
-                    products = await basket_repo.get_products_in_active_basket(
-                        basket_id
-                    )
+                    products = await basket_repo.get_basket_products(basket_id)
                     if not products:
                         raise NotProductsInBasket()
 

@@ -125,3 +125,12 @@ class BasketRepo:
         )
 
         return [(name, quantity, price) for name, quantity, price in result.all()]
+
+    async def get_basket_products(self, basket_id: int):
+        result = await self.session.execute(
+            select(BasketItem).where(
+                BasketItem.basket_id == basket_id,
+            )
+        )
+
+        return result.scalars().all()

@@ -27,3 +27,14 @@ def products_keyboard(products: list[Product], slug: str):
     keyboard.button(text="Назад", callback_data="catalog_btn")
 
     return keyboard.adjust(1).as_markup()
+
+
+def get_product_keyboard_before(slug: str):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.button(text="Выбрать другой вкус", callback_data=f"category:{slug}")
+    keyboard.button(text="Вернуться к выбору категорий", callback_data="catalog_btn")
+    keyboard.button(text="Корзина", callback_data="basket_btn")
+
+    return keyboard.adjust(1).as_markup()
+

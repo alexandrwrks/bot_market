@@ -10,7 +10,7 @@ from app.exception.product_ex import (
     NotEnoughProductQuantityError,
     NoProductsInCategoryError,
 )
-from app.keyboards.product import products_keyboard, get_product_keyboard
+from app.keyboards.product import products_keyboard, get_product_keyboard, get_product_keyboard_before
 
 from app.service.basket_service import basket_service
 from app.service.product_service import product_service
@@ -50,7 +50,7 @@ async def get_products_by_categories(callback: CallbackQuery):
 
 
 @router.callback_query(F.data.startswith("product:"))
-async def get_information_about_product(callback: CallbackQuery):
+async def get_information_about_product(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
     parts = callback.data.split(":")
@@ -69,6 +69,8 @@ async def get_information_about_product(callback: CallbackQuery):
             f"Цена: {product.price} руб.\n"
             f"В наличии: {product.quantity} шт."
         )
+
+        await state.update_data(slug=slug)
 
         await callback.message.answer_photo(
             photo=FSInputFile(product.photo_path),
@@ -91,7 +93,7 @@ async def get_information_about_product(callback: CallbackQuery):
 
 
 """
-Пользоватлеь нажимает на кнопку "Добавить в корзину"
+Пользователь нажимает на кнопку "Добавить в корзину"
 Сделать так чтобы пользователь писал своё число товаров которое ему нужно
 """
 
@@ -116,7 +118,10 @@ async def add_product_to_basket(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer("Этот товар закончился")
         return
 
-    await state.update_data(product_id=product_id)
+    await state.update_data(
+        product_id=product_id,
+        available=product_info.available,
+    )
     await state.set_state(AddToCartState.waiting_quantity)
 
     await callback.message.answer(
@@ -131,8 +136,21 @@ async def process_product_quantity(message: Message, state: FSMContext):
     product_id = int(data["product_id"])
     telegram_id = message.from_user.id
 
+    slug = data.get("slug")
+    available = data.get("available")
+
     try:
         quantity = int(message.text)
+        if quantity <= 0:
+            await message.answer("Количество должно быть больше 0. Введите заново:")
+            return
+
+        if available is not None and quantity > int(available):
+            await message.answer(
+                f"На складе только {available} шт. Введите количество заново:"
+            )
+            return
+
 
         await basket_service.add_product_to_basket(
             telegram_id=telegram_id, product_id=product_id, quantity=quantity
@@ -155,5 +173,19 @@ async def process_product_quantity(message: Message, state: FSMContext):
         await message.answer("Не удалось добавить товара в корзину. Попробуйте позже")
         return
 
+    except Exception:
+        await message.answer(
+            "Ошибка. Работы хэндлера"
+        )
+        return
+
     await state.clear()
-    await message.answer("Товар добавлен в корзину")
+    if slug:
+        await message.answer(
+            text="Товар успешно добавлен в корзину",
+            reply_markup=get_product_keyboard_before(
+                slug=slug,
+            )
+        )
+
+

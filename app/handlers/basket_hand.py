@@ -2,6 +2,7 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from aiogram.exceptions import TelegramBadRequest
 
+from app.database.config import logger
 from app.keyboards.basket import get_user_basket
 
 from app.service.basket_service import basket_service
@@ -61,11 +62,11 @@ async def basket_composition(callback: CallbackQuery):
 
 @router.callback_query(F.data == "clear_btn")
 async def clear_basket(callback: CallbackQuery):
-    await callback.answer()
-
+    logger.info("Вызвался хэндлер очистки корзины")
     telegram_id = callback.from_user.id
 
     try:
+        logger.info("Вызывается basket_service для очистки корзины")
         await basket_service.clear_basket(telegram_id)
 
         await callback.answer("Корзина успешна очищена")
@@ -73,10 +74,13 @@ async def clear_basket(callback: CallbackQuery):
         await _render_basket(callback)
 
     except NotFoundUserError:
+        logger.exception("Не найден пользователь")
         await callback.answer(text="Не найден пользователь", show_alert=True)
 
     except NotProductsInBasket:
+        logger.exception("Товаров нет в корзине")
         await callback.answer(text="Товаров нет в корзине", show_alert=True)
 
     except ClearBasketError:
+        logger.exception("Ошибка очистки корзины")
         await callback.answer(text="Ошибка очистки корзины", show_alert=True)
