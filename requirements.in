@@ -1,3 +1,8 @@
 SQLAlchemy
 aiogram
 python-dotenv
+ruff
+pytest
+aiosqlite
+alembic
+docker

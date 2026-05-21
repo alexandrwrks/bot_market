@@ -22,4 +22,15 @@ class UserRepo:
 
         return result.scalar_one_or_none()
 
-    async def update_user_info(self): ...
+    async def get_user_admin(self, telegram_id: int):
+        result = await self.session.execute(
+            select(User).where(User.telegram_id == telegram_id)
+        )
+
+        return result.scalars()
+
+    async def update_admin(self, telegram_id: int):
+        await self.session.execute(
+            update(User).where(User.telegram_id == telegram_id)
+            .values(admin=True)
+        )

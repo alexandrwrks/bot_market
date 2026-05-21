@@ -37,4 +37,3 @@ def get_product_keyboard_before(slug: str):
     keyboard.button(text="Корзина", callback_data="basket_btn")
 
     return keyboard.adjust(1).as_markup()
-

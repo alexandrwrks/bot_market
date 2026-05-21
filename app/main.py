@@ -6,9 +6,13 @@ from dotenv import load_dotenv
 
 from app.handlers import routers
 from app.database import init_db
+from app.service.user_service import user_service
 
 load_dotenv()
 
+TELEGRAM_ID = [
+    1918881124,
+]
 
 async def main():
     token = os.getenv("BOT_TOKEN")
@@ -23,9 +27,15 @@ async def main():
     for router in routers:
         dp.include_router(router)
 
+    for telegram_id in TELEGRAM_ID:
+        await user_service.get_admin(telegram_id)
+
     print("Бот запущен")
     await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print(f"Остановка бота!")

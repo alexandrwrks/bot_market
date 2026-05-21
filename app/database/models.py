@@ -10,7 +10,12 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    telegram_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False)
+    telegram_id: Mapped[int] = mapped_column(
+        Integer, unique=True, index=True, nullable=False
+    )
+    admin: Mapped[bool] = mapped_column(
+        Boolean, index=True, default=False, nullable=False
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, server_default=func.now(), nullable=False

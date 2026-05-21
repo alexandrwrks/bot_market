@@ -10,7 +10,11 @@ from app.exception.product_ex import (
     NotEnoughProductQuantityError,
     NoProductsInCategoryError,
 )
-from app.keyboards.product import products_keyboard, get_product_keyboard, get_product_keyboard_before
+from app.keyboards.product import (
+    products_keyboard,
+    get_product_keyboard,
+    get_product_keyboard_before,
+)
 
 from app.service.basket_service import basket_service
 from app.service.product_service import product_service
@@ -151,7 +155,6 @@ async def process_product_quantity(message: Message, state: FSMContext):
             )
             return
 
-
         await basket_service.add_product_to_basket(
             telegram_id=telegram_id, product_id=product_id, quantity=quantity
         )
@@ -174,9 +177,7 @@ async def process_product_quantity(message: Message, state: FSMContext):
         return
 
     except Exception:
-        await message.answer(
-            "Ошибка. Работы хэндлера"
-        )
+        await message.answer("Ошибка. Работы хэндлера")
         return
 
     await state.clear()
@@ -185,7 +186,5 @@ async def process_product_quantity(message: Message, state: FSMContext):
             text="Товар успешно добавлен в корзину",
             reply_markup=get_product_keyboard_before(
                 slug=slug,
-            )
+            ),
         )
-
-
