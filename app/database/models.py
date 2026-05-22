@@ -169,3 +169,18 @@ class OrderItem(Base):
 
     order: Mapped["Order"] = relationship(back_populates="items")
     product: Mapped["Product"] = relationship(back_populates="order_items")
+
+
+class OrderInfo(Base):
+    __tablename__ = "order_info"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id"), nullable=False, index=True)
+
+    username: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(String(50), nullable=False)
+    surname: Mapped[str] = mapped_column(String(50), nullable=False)
+    city: Mapped[str] = mapped_column(String(50), nullable=False)
+    address: Mapped[str] = mapped_column(String, nullable=False)
+    email: Mapped[str] = mapped_column(String, nullable=False)
+    phone: Mapped[str] = mapped_column(String, nullable=False)

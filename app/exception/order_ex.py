@@ -9,3 +9,6 @@ class PlaceOrderError(OrderError):
 class NotUserOrder(OrderError):
     # Не найдены заказы пользователя
     pass
+
+class CostEnoughError(OrderError):
+    pass

@@ -10,7 +10,7 @@ def get_exists_catalog(existing_categories):
         keyboard.button(text=category.name, callback_data=f"category:{category.slug}")
 
     # Кнопка назад -> Стартовая точка
-    keyboard.button(text="Назад", callback_data="start_btn")
+    keyboard.button(text="🔙 Назад", callback_data="start_btn")
 
     # Возращаем клавиатуру
     return keyboard.adjust(1).as_markup()
