@@ -31,6 +31,5 @@ class UserRepo:
 
     async def update_admin(self, telegram_id: int):
         await self.session.execute(
-            update(User).where(User.telegram_id == telegram_id)
-            .values(admin=True)
+            update(User).where(User.telegram_id == telegram_id).values(admin=True)
         )

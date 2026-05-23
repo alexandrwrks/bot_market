@@ -175,7 +175,9 @@ class OrderInfo(Base):
     __tablename__ = "order_info"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id"), nullable=False, index=True)
+    order_id: Mapped[int] = mapped_column(
+        ForeignKey("orders.id"), nullable=False, index=True
+    )
 
     username: Mapped[str] = mapped_column(String, nullable=False)
     name: Mapped[str] = mapped_column(String(50), nullable=False)

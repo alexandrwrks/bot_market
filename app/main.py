@@ -14,6 +14,7 @@ TELEGRAM_ID = [
     1918881124,
 ]
 
+
 async def main():
     token = os.getenv("BOT_TOKEN")
     if not token:
@@ -23,14 +24,16 @@ async def main():
     dp = Dispatcher()
 
     await init_db()
+    print("Успешное подключение к базе данных!")
 
     for router in routers:
         dp.include_router(router)
+    print("Успешное подключение роутеров!")
 
     for telegram_id in TELEGRAM_ID:
         await user_service.get_admin(telegram_id)
 
-    print("Бот запущен")
+    print("Бот успешно запущен!")
     await dp.start_polling(bot)
 
 

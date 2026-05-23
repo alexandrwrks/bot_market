@@ -8,4 +8,3 @@ class OrderFSM(StatesGroup):
     email = State()
     city = State()
     address = State()
-

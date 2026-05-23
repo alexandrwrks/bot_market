@@ -48,16 +48,13 @@ class UserService:
                     await user_repo.update_admin(telegrm_id)
 
                     logger.info(
-                        "Успешное добавление админки пользователю=%s",
-                        telegrm_id
+                        "Успешное добавление админки пользователю=%s", telegrm_id
                     )
 
                 except Exception:
                     logger.exception(
-                        "Ошибка добавления админки для пользователя=%s",
-                        telegrm_id
+                        "Ошибка добавления админки для пользователя=%s", telegrm_id
                     )
-
 
 
 user_service = UserService()

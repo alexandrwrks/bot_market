@@ -1,6 +1,5 @@
 from app.database.config import SessionLocal, logger
 from app.exception.order_ex import NotUserOrder, CostEnoughError
-from app.exception.user_ex import NotFoundUserError
 
 from app.repo.order_repo import OrderRepo
 from app.repo.product_repo import ProductRepo
@@ -15,6 +14,10 @@ class OrderService:
                     product_repo = ProductRepo(session)
                     basker_repo = BasketRepo(session)
                     order_repo = OrderRepo(session)
+                    """
+                    Все товары которые находятся в корзине переместить в таблицу orders
+                    из таблицы baskets уделить все товары
+                    """
 
             except Exception as e:
                 logger.error(e)
@@ -68,9 +71,9 @@ class OrderService:
                 try:
                     basket_repo = BasketRepo(session)
 
-                    basket_price = await basket_repo.get_active_basket_total_price(telegram_id)
-                    if basket_price == 0:
-                        raise NotFoundUserError()
+                    basket_price = await basket_repo.get_active_basket_total_price(
+                        telegram_id=telegram_id
+                    )
 
                     if basket_price < 5000:
                         raise CostEnoughError()
@@ -82,5 +85,6 @@ class OrderService:
                         "Ошибка проверки корзины пользователя=%s", telegram_id
                     )
                     raise
+
 
 order_service = OrderService()
