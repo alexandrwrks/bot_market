@@ -170,11 +170,10 @@ async def process_city(message: Message, state: FSMContext):
 @router.message(OrderFSM.address)
 async def process_address(message: Message, state: FSMContext):
     await state.update_data(address=message.text)
-    data = await state.get_data()
-    await state.clear()
 
-    try:
-        text = (
+    data = await state.get_data()
+
+    text = (
             "Ваши данные:\n\n"
             f"Имя: {data['name']}\n"
             f"Фамилия: {data['surname']}\n"
@@ -184,18 +183,29 @@ async def process_address(message: Message, state: FSMContext):
             f"Адрес: {data['address']}"
         )
 
-        await message.answer(text=text, reply_markup=get_confirm_order())
-
-    except Exception:
-        await message.answer(text="Ошибка. Повторите попытку")
+    await message.answer(text=text, reply_markup=get_confirm_order())
 
 
 @router.callback_query(F.data == "done_btn")
-async def create_order(callback: CallbackQuery):
+async def create_order(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
-    await callback.message.edit_text(text="Сохранили ваши данные")
+    data = await state.get_data()
 
+    try:
+        """
+        Сохранение заказа в БД и уведомление админов
+        """
+        await state.clear()
+
+        await callback.message.edit_text(
+            text="✅ Заказ успешно оформлен. Мы скоро с вами свяжемся."
+        )
+
+    except Exception:
+        await callback.message.answer(
+            text="❌ Ошибка при создании заказа. Попробуйте ещё раз."
+        )
 
 @router.callback_query(F.data == "changes_btn")
 async def change_data_for_order(callback: CallbackQuery):
