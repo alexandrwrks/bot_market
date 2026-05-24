@@ -1,4 +1,4 @@
-from sqlalchemy import select, delete, update
+from sqlalchemy import select, delete, update, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import BasketItem, Order, OrderItem, Product
@@ -8,9 +8,27 @@ class OrderRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create_order_from_active_basket(self, basket_id: int):
-        new_order = Order()
-        return new_order
+    async def create_order(
+            self, telegram_id: int, total_price: int
+    ):
+        await self.session.execute(
+            insert(Order).values(
+                telegram_id=telegram_id,
+                total_price=total_price,
+            )
+        )
+
+    async def add_order_item(
+            self, telegram_id: int, product_name: str, quantity: int, price: int
+    ):
+        await self.session.execute(
+            insert(OrderItem).values(
+                order_id=telegram_id,
+                product_name=product_name,
+                quantity=quantity,
+                price_at_time=price,
+            )
+        )
 
     async def get_user_orders(self, telegram_id: int):
         result = await self.session.execute(

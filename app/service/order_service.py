@@ -1,5 +1,6 @@
 from app.database.config import SessionLocal, logger
-from app.exception.order_ex import NotUserOrder, CostEnoughError
+from app.exception.basket_ex import NotProductsInBasket
+from app.exception.order_ex import NotUserOrder, CostEnoughError, CreateOrderError
 
 from app.repo.order_repo import OrderRepo
 from app.repo.product_repo import ProductRepo
@@ -11,9 +12,35 @@ class OrderService:
         async with SessionLocal() as session:
             try:
                 async with session.begin():
-                    product_repo = ProductRepo(session)
-                    basker_repo = BasketRepo(session)
+                    basket_repo = BasketRepo(session)
                     order_repo = OrderRepo(session)
+
+                    basket_summary = await basket_repo.get_basket_summary(telegram_id=telegram_id)
+                    # basket_summary → [(name, quantity, price)]
+                    if not basket_summary:
+                        raise NotProductsInBasket()
+
+                    basket_price = await basket_repo.get_active_basket_total_price(telegram_id=telegram_id)
+                    if not basket_price:
+                        raise NotProductsInBasket()
+
+                    # return basket_summary, basket_price
+                    create_order = await order_repo.create_order(
+                        telegram_id=telegram_id,
+                        total_price=basket_price,
+                    )
+                    if not create_order:
+                        raise CreateOrderError()
+
+                    for name, quantity, price in basket_summary:
+                        await order_repo.add_order_item(
+                            telegram_id=telegram_id,
+                            product_name=name,
+                            quantity=quantity,
+                            price=price,
+                        )
+
+
                     """
                     Все товары которые находятся в корзине переместить в таблицу orders
                     из таблицы baskets уделить все товары

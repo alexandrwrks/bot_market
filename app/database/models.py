@@ -160,6 +160,7 @@ class OrderItem(Base):
     product_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("products.id"), nullable=False, index=True
     )
+    product_name: Mapped[str] = mapped_column(String, nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     price_at_time: Mapped[int] = mapped_column(Integer, nullable=False)
 

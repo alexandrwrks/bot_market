@@ -1,21 +1,15 @@
 import logging
-import os
 
-from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
-load_dotenv()
+from app.config import settings
 
-# DATA_BASE_URL = "postgresql+asyncpg://postgres:postgre123@localhost:5432/test_bot_market"
 
-SQLITE_DATABASE_URL = os.getenv("SQLITE_DATABASE_URL")
-if not SQLITE_DATABASE_URL:
-    raise RuntimeError("SQLITE_DATABASE_URL не найден в переменных окружения")
+engine = create_async_engine(settings.DATABASE_URL)
+lite_engine = create_async_engine(settings.SQLITE_DATABASE_URL)
 
-engine = create_async_engine(SQLITE_DATABASE_URL)
-
-SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+SessionLocal = async_sessionmaker(lite_engine, class_=AsyncSession, expire_on_commit=False)
 
 
 class Base(DeclarativeBase):
