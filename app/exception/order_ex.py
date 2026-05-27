@@ -14,5 +14,6 @@ class NotUserOrder(OrderError):
 class CostEnoughError(OrderError):
     pass
 
+
 class CreateOrderError(OrderError):
     pass

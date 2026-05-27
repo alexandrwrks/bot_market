@@ -1,7 +1,7 @@
-from typing import Optional
-
-from sqlalchemy import select, update
+from sqlalchemy import select, update, insert
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from aiogram.types import User as TgUser
 
 from app.database.models import User
 
@@ -10,10 +10,15 @@ class UserRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create_user(self, telegram_id: int):
-        user = User(telegram_id=telegram_id)
-
-        self.session.add(user)
+    async def create_user(self, user: TgUser):
+        await self.session.execute(
+            insert(User).values(
+                telegram_id=user.id,
+                first_name=user.first_name,
+                last_name=user.last_name,
+                username=user.username,
+            )
+        )
 
     async def get_user(self, telegram_id: int):
         result = await self.session.execute(

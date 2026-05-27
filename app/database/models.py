@@ -10,12 +10,15 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
     telegram_id: Mapped[int] = mapped_column(
         Integer, unique=True, index=True, nullable=False
     )
-    admin: Mapped[bool] = mapped_column(
-        Boolean, index=True, default=False, nullable=False
-    )
+    first_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(50), nullable=True)
+    username: Mapped[str] = mapped_column(String(50), nullable=True)
+
+    admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, server_default=func.now(), nullable=False
@@ -28,13 +31,11 @@ class Category(Base):
     __tablename__ = "categories"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     slug: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False, index=True
     )
-    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    description: Mapped[str] = mapped_column(String, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     created_at: Mapped[datetime] = mapped_column(
@@ -78,7 +79,6 @@ class Basket(Base):
     telegram_id: Mapped[int] = mapped_column(
         ForeignKey("users.telegram_id"), nullable=False, index=True
     )
-    status: Mapped[str] = mapped_column(String(20), default="active", nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, server_default=func.now(), nullable=False
@@ -131,6 +131,9 @@ class Order(Base):
     telegram_id: Mapped[int] = mapped_column(
         ForeignKey("users.telegram_id"), nullable=False, index=True
     )
+
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    phone: Mapped[str] = mapped_column(String, nullable=False)
     total_price: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="created", nullable=False)
 
@@ -170,20 +173,3 @@ class OrderItem(Base):
 
     order: Mapped["Order"] = relationship(back_populates="items")
     product: Mapped["Product"] = relationship(back_populates="order_items")
-
-
-class OrderInfo(Base):
-    __tablename__ = "order_info"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    order_id: Mapped[int] = mapped_column(
-        ForeignKey("orders.id"), nullable=False, index=True
-    )
-
-    username: Mapped[str] = mapped_column(String, nullable=False)
-    name: Mapped[str] = mapped_column(String(50), nullable=False)
-    surname: Mapped[str] = mapped_column(String(50), nullable=False)
-    city: Mapped[str] = mapped_column(String(50), nullable=False)
-    address: Mapped[str] = mapped_column(String, nullable=False)
-    email: Mapped[str] = mapped_column(String, nullable=False)
-    phone: Mapped[str] = mapped_column(String, nullable=False)

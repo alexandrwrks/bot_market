@@ -17,9 +17,7 @@ WELCOME_TEXT = (
 
 @router.message(Command("start"))
 async def cmd_start_message(message: Message):
-    telegram_id = message.from_user.id
-
-    await user_service.existing_user(telegram_id)
+    await user_service.existing_user(message.from_user)  # → User
 
     await message.answer(
         text=WELCOME_TEXT,

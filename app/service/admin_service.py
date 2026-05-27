@@ -4,6 +4,7 @@ from aiogram.exceptions import TelegramAPIError
 from app.config import settings
 from app.database.config import logger
 
+
 class AdminNotificationService:
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -15,11 +16,10 @@ class AdminNotificationService:
             f"Пользователь: {user.full_name}\n"
             f"Telegram ID: <code>{user.telegram_id}</code>\n"
             f"Телефон: {order.phone}\n"
-            f"Email: {order.email or 'Не указан'}\n"
             f"Сумма: {order.total_price} ₽"
         )
 
-        for admin_id in settings.ADMINS_IDS:
+        for admin_id in settings.ADMIN_IDS:
             try:
                 await self.bot.send_message(
                     chat_id=admin_id,
@@ -28,6 +28,4 @@ class AdminNotificationService:
                 )
 
             except TelegramAPIError:
-                logger.exception(
-                    "Ошибка отправки сообщений админам"
-                )
+                logger.exception("Ошибка отправки сообщений админам")

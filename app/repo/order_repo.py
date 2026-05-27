@@ -1,7 +1,6 @@
-from sqlalchemy import select, delete, update, insert
+from sqlalchemy import select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.database.models import BasketItem, Order, OrderItem, Product
+from app.database.models import Order, OrderItem, Product
 
 
 class OrderRepo:
@@ -9,22 +8,34 @@ class OrderRepo:
         self.session = session
 
     async def create_order(
-            self, telegram_id: int, total_price: int
+        self, telegram_id: int, name: str, phone: str, total_price: int
     ):
-        await self.session.execute(
-            insert(Order).values(
+        result = await self.session.execute(
+            insert(Order)
+            .values(
                 telegram_id=telegram_id,
+                name=name,
+                phone=phone,
                 total_price=total_price,
             )
+            .returning(Order.id)
         )
+        order_id = result.scalar_one()
+        return order_id
 
     async def add_order_item(
-            self, telegram_id: int, product_name: str, quantity: int, price: int
+        self,
+        order_id: int,
+        product_name: str,
+        product_id: int,
+        quantity: int,
+        price: int,
     ):
         await self.session.execute(
             insert(OrderItem).values(
-                order_id=telegram_id,
+                order_id=order_id,
                 product_name=product_name,
+                product_id=product_id,
                 quantity=quantity,
                 price_at_time=price,
             )

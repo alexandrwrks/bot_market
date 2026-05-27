@@ -3,51 +3,69 @@ from app.exception.basket_ex import NotProductsInBasket
 from app.exception.order_ex import NotUserOrder, CostEnoughError, CreateOrderError
 
 from app.repo.order_repo import OrderRepo
-from app.repo.product_repo import ProductRepo
 from app.repo.basket_repo import BasketRepo
 
 
 class OrderService:
-    async def create_order(self, telegram_id: int):
+    async def create_order(self, telegram_id: int, user_data: dict):
         async with SessionLocal() as session:
+            order_repo = OrderRepo(session)
+            basket_repo = BasketRepo(session)
             try:
                 async with session.begin():
-                    basket_repo = BasketRepo(session)
-                    order_repo = OrderRepo(session)
-
-                    basket_summary = await basket_repo.get_basket_summary(telegram_id=telegram_id)
-                    # basket_summary → [(name, quantity, price)]
-                    if not basket_summary:
-                        raise NotProductsInBasket()
-
-                    basket_price = await basket_repo.get_active_basket_total_price(telegram_id=telegram_id)
-                    if not basket_price:
-                        raise NotProductsInBasket()
-
-                    # return basket_summary, basket_price
-                    create_order = await order_repo.create_order(
-                        telegram_id=telegram_id,
-                        total_price=basket_price,
+                    """Создание заказа
+                    telegram_id: int,
+                    total_price: int → стоимость всего заказа,
+                    """
+                    total_price = await basket_repo.get_active_basket_total_price(
+                        telegram_id=telegram_id
                     )
-                    if not create_order:
-                        raise CreateOrderError()
+                    if total_price == 0:
+                        raise NotProductsInBasket()
 
-                    for name, quantity, price in basket_summary:
+                    order_id = await order_repo.create_order(
+                        telegram_id=telegram_id, name=user_data['name'],
+                        phone=user_data['phone'],total_price=total_price
+                    )
+                    if order_id is None:
+                        raise CreateOrderError()
+                    """
+                    Получить все товары находящиеся в корзине пользователя
+                    Добавить все товары в таблицу OrderItem
+                    """
+                    basket_summary = await basket_repo.get_basket_summary_with_id(
+                        telegram_id=telegram_id
+                    )
+                    for name, product_id, quantity, price in basket_summary:
                         await order_repo.add_order_item(
-                            telegram_id=telegram_id,
+                            order_id=order_id,
                             product_name=name,
+                            product_id=product_id,
                             quantity=quantity,
                             price=price,
                         )
-
-
                     """
-                    Все товары которые находятся в корзине переместить в таблицу orders
-                    из таблицы baskets уделить все товары
+                    Сохраняем данные о пользователе в таблицу OrderInfo
+                    user_data: dict → 
+                    telegram_id, username, name, surname, phone, email, city, address
                     """
+                    basket_id = await basket_repo.get_basket_id_by_id(
+                        telegram_id=telegram_id
+                    )
+                    if not basket_id:
+                        raise NotProductsInBasket()
 
-            except Exception as e:
-                logger.error(e)
+                    await basket_repo.clear_basket(basket_id=basket_id)
+
+                    logger.info(
+                        "Успешное создание заказа. Номер заказа=%s, пользователь=%s",
+                        order_id,
+                        user_data["name"],
+                    )
+                    return True
+
+            except Exception:
+                logger.exception("Ошибка создания заказа")
                 raise
 
     async def get_user_orders(self, telegram_id: int):

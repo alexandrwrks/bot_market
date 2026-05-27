@@ -1,4 +1,4 @@
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.models import Basket, BasketItem, Product
 
@@ -7,11 +7,13 @@ class BasketRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    async def create_basket(self, telegram_id: int):
+        await self.session.execute(insert(Basket).values(telegram_id=telegram_id))
+
     async def get_or_create_active_basket(self, telegram_id: int):
         result = await self.session.execute(
             select(Basket).where(
                 Basket.telegram_id == telegram_id,
-                Basket.status == "active",
             )
         )
 
@@ -20,7 +22,7 @@ class BasketRepo:
         if basket is not None:
             return basket
 
-        basket = Basket(telegram_id=telegram_id, status="active")
+        basket = Basket(telegram_id=telegram_id)
         self.session.add(basket)
 
         return basket
@@ -43,16 +45,16 @@ class BasketRepo:
         return int(quantity or 0)
 
     async def get_active_basket_total_price(self, telegram_id: int) -> int:
-        basket = await self.get_or_create_active_basket(telegram_id)
-        if basket is None:
-            return 0
-
         result = await self.session.execute(
             select(
                 func.coalesce(
                     func.sum(BasketItem.quantity * BasketItem.price_at_time), 0
                 )
-            ).where(BasketItem.basket_id == basket.id)
+            )
+            .join(Basket, BasketItem.basket_id == Basket.id)
+            .where(
+                Basket.telegram_id == telegram_id,
+            )
         )
         total_price = result.scalar_one()
         return int(total_price)
@@ -66,13 +68,10 @@ class BasketRepo:
         result = await self.session.execute(
             select(Basket.id).where(
                 Basket.telegram_id == telegram_id,
-                Basket.status == "active",
             )
         )
 
-        basket_id = result.scalar_one_or_none()
-
-        return basket_id
+        return result.scalar_one_or_none()
 
     async def add_product(
         self, basket_id: int, product_id: int, price: int, quantity: int
@@ -120,7 +119,6 @@ class BasketRepo:
             .join(Basket, Basket.id == BasketItem.basket_id)
             .where(
                 Basket.telegram_id == telegram_id,
-                Basket.status == "active",
             )
         )
 
@@ -134,3 +132,25 @@ class BasketRepo:
         )
 
         return result.scalars().all()
+
+    async def get_basket_summary_with_id(
+        self, telegram_id: int
+    ) -> list[tuple[str, int, int, int]]:
+        result = await self.session.execute(
+            select(
+                Product.name,
+                Product.id,
+                BasketItem.quantity,
+                BasketItem.price_at_time,
+            )
+            .join(BasketItem, BasketItem.product_id == Product.id)
+            .join(Basket, Basket.id == BasketItem.basket_id)
+            .where(
+                Basket.telegram_id == telegram_id,
+            )
+        )
+
+        return [
+            (name, product_id, quantity, price)
+            for name, product_id, quantity, price in result.all()
+        ]

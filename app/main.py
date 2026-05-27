@@ -8,6 +8,7 @@ from app.service.user_service import user_service
 
 from app.config import settings
 
+
 async def main():
     bot = Bot(settings.BOT_TOKEN)
     dp = Dispatcher()

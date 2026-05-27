@@ -30,4 +30,5 @@ class Settings(BaseSettings):
             f"/{self.DB_NAME}"
         )
 
+
 settings = Settings()

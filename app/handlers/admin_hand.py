@@ -1,7 +1,6 @@
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
-from alembic.util import messaging
 
 from app.exception.user_ex import UserAdminLicense, NotFoundUserError
 from app.keyboards.admin_keyboars import (
