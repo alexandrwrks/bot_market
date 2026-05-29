@@ -37,7 +37,7 @@ ADMIN_IDS=list_of_user_ids
 ```
 4. Запустить бота:
 ```bash
-python -m app.main
+python -m crm.main
 ```
 
 ## Базовый пользовательский сценарий MVP

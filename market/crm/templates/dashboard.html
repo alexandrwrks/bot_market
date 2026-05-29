@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/dashboard.css">
+</head>
+<body>
+<!--С левой стороны будет находиться панель передвижения-->
+    <div>
+        <h2>Dashboard</h2>
+        <ul>
+            <li><a href="{{ url_for('users_page') }}">Пользователи</a></li>
+            <li>Товары</li>
+            <li>Настройки</li>
+        </ul>
+    </div>
+
+    <div class="statistics">
+        <div class="clients">
+            <h1>Клиенты</h1>
+            <h2>{{ data.count_clients }}</h2>
+        </div>
+        <div class="deal">
+            <h1>Сделки</h1>
+            <h2>{{ data.count_deal }}</h2>
+        </div>
+        <div class="tasks">
+            <h1>Задач на сегодня</h1>
+            <h2>{{ data.count_tasks }}</h2>
+        </div>
+        <div class="revenue">
+            <h1>Выручка</h1>
+            <h2>{{ data.count_revenue }} рублей</h2>
+        </div>
+    </div>
+
+</body>
+</html>
+
+

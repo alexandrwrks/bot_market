@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <a href="index.html">Вернуться на главную</a>
+    <div class="users-grid">
+       {% for user in users %}
+          <div class="user-card">
+              <p><b>ID:</b>{{ user.id }}</p>
+              <p><b>Имя:</b>{{ user.name }}</p>
+              <p><b>Заказы:</b>{{ user.count }}</p>
+              <a class="btn" href="/users/{{ user.id }}">Открыть панель</a>
+          </div>
+       {% endfor %}
+    </div>
+</body>
+
+

@@ -5,5 +5,5 @@ services:
     env_file:
       - .env
     volumes:
-      - ./demo.db:/app/demo.db
+      - ./demo.db:/crm/demo.db
     restart: unless-stopped
