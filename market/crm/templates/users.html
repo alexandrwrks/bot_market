@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Users</title>
-    <link rel="stylesheet" href="/static/users.css">
+    <link rel="stylesheet" href="/static/user_page.css">
 </head>
 <body>
     <h1>Пользователи</h1>
@@ -17,14 +17,29 @@
         </ul>
     </div>
 
-    <div>
-        {% for user in users %}
-            <div>
-                <p>ID: <b>{{ user.id }}</b></p>
-                <p>Имя: <b>{{ user.name }}</b></p>
-                <p>Количество заказов: <b>{{ user.count }}</b></p>
-            </div>
-        {% endfor %}
+    <div class="users-container">
+        <h1>Пользователи</h1>
+
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя</th>
+                    <th>Количество заказов</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>ID: <b>{{ user.id }}</b></td>
+                    <td>Имя: <b>{{ user.name }}</b></td>
+                    <td>Количество заказов: <b>{{ user.count }}</b></td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
 </body>

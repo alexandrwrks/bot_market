@@ -1,5 +1,50 @@
-.statistics {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #dad9dd;
+}
+
+.container {
     display: flex;
-    flex-direction: row;
-    gap: 20px;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 300px;
+    background-color: #290157;
+    color: black;
+    padding: 20px;
+}
+
+.content {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    column-gap: 40px;
+}
+
+.info-box {
+    border: white 1px solid;
+    border-radius: 10px;
+    min-width: 180px;
+    background-color: white;
+    max-height: 160px;
+    position: relative;
+}
+
+.info-box h2 {
+    color: gray;
+    position: absolute;
+    top: 50px;
+    left: 20px;
+}
+
+.info-box h1 {
+    position: absolute;
+    bottom: 35px;
+    left: 20px;
 }
