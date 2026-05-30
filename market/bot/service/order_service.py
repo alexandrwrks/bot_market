@@ -73,6 +73,21 @@ class OrderService:
                 logger.exception("Ошибка создания заказа")
                 raise
 
+    async def test_create_order(self, telegram_id: int, user_data: dict):
+        async with SessionLocal() as session:
+            order_repo = OrderRepo(session)
+            basket_repo = BasketRepo(session)
+            try:
+                async with session.begin():
+                    basket_id = await basket_repo.get_basket_id_by_id(telegram_id=telegram_id)
+                    total_price = await basket_repo.get_active_basket_total_price_by_basket(basket_id=basket_id)
+
+                    return total_price
+
+            except Exception:
+                logger.exception("Ошибка")
+
+
     async def get_user_orders(self, telegram_id: int):
         """Выдаём все заказы которые есть у пользователя"""
         async with SessionLocal() as session:
@@ -135,6 +150,15 @@ class OrderService:
                         "Ошибка проверки корзины пользователя=%s", telegram_id
                     )
                     raise
+
+    async def test_confirm_order(self, telegram_id: int):
+        async with SessionLocal() as session:
+            basket_repo = BasketRepo(session)
+
+            basket_id = await basket_repo.get_basket_id_by_id(telegram_id=telegram_id)
+            basket_price = await basket_repo.get_active_basket_total_price_by_basket(basket_id=basket_id)
+
+            return basket_price
 
 
 order_service = OrderService()

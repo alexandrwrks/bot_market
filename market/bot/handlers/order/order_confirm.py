@@ -5,6 +5,7 @@ from aiogram.types import CallbackQuery, Message
 from phonenumbers import NumberParseException
 from pydantic import BaseModel, ValidationError, field_validator
 
+from market.bot.keyboards.start import get_start_inline_keyboard
 from market.bot.exception.basket_ex import NotProductsInBasket
 from market.bot.exception.order_ex import (
     CostEnoughError,
@@ -47,11 +48,9 @@ async def confirm_order(callback: CallbackQuery, state: FSMContext):
         await order_service.check_user_basket_for_order(callback.from_user.id)
 
         await callback.answer()
-        await state.update_data(telegram_id=callback.message.from_user.id)
 
+        await callback.message.edit_text("Введите ваше имя:")
         await state.set_state(OrderFSM.name)
-
-        await callback.message.answer("Введите имя:")
 
     except CostEnoughError:
         await callback.answer(
@@ -117,13 +116,14 @@ async def create_order(callback: CallbackQuery, state: FSMContext):
 
     try:
         await order_service.create_order(
-            telegram_id=callback.message.from_user.id,
+            telegram_id=callback.from_user.id,
             user_data=user_data,
         )
         await state.clear()
 
         await callback.message.edit_text(
-            text="✅ Заказ успешно оформлен. Мы скоро с вами свяжемся."
+            text="✅ Заказ успешно оформлен. Мы скоро с вами свяжемся.",
+            reply_markup=get_start_inline_keyboard(),
         )
 
     except (CreateOrderError, NotProductsInBasket):

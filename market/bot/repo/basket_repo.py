@@ -155,3 +155,18 @@ class BasketRepo:
             (name, product_id, quantity, price)
             for name, product_id, quantity, price in result.all()
         ]
+
+    async def get_active_basket_total_price_by_basket(self, basket_id: int) -> int:
+        result = await self.session.execute(
+            select(
+                func.coalesce(
+                    func.sum(BasketItem.quantity * BasketItem.price_at_time), 0
+                )
+            )
+            .where(
+                BasketItem.basket_id == basket_id,
+            )
+        )
+
+        total_price = result.scalar_one()
+        return int(total_price)
