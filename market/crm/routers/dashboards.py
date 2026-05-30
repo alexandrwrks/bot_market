@@ -1,23 +1,14 @@
 from fastapi import APIRouter, status, Request
 
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
-
 from market.crm.config_template import templates
-from market.crm.service import dashboard_service
+from market.crm.service.dashboard import dashboard_service
+
 
 router = APIRouter(
     prefix="/dashboard",
     tags=["dashboard"],
 )
-
-
-class DashboardData(BaseModel):
-    count_clients: int = 1
-    count_deal: int = 3
-    count_tasks: int = 4
-    count_revenue: int = 140000
-
 
 # @router.get("/", response_class=HTMLResponse)
 # async def client_dashboard(request: Request):
@@ -35,14 +26,13 @@ class DashboardData(BaseModel):
 
 @router.get("/", name="dashboard_page", response_class=HTMLResponse)
 async def client_dashboard(request: Request):
-
-    datas = DashboardData()
+    data = await dashboard_service.get_details()
     return templates.TemplateResponse(
         request=request,
         name="dashboard.html",
         context={
             "request": request,
-            "data": datas,
+            "data": data,
         },
         status_code=status.HTTP_200_OK,
     )

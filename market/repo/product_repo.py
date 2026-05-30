@@ -93,3 +93,8 @@ class ProductRepo:
 
         if result.rowcount is None or result.rowcount == 0:
             raise NotEnoughProductQuantityError()
+
+    async def get_all_products(self):
+        result = await self.session.execute(select(Product))
+
+        return result.scalars().all()

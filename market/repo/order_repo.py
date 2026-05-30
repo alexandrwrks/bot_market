@@ -1,5 +1,6 @@
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.functions import coalesce
 
 from market.database.models import Order, OrderItem, Product
 
@@ -78,3 +79,31 @@ class OrderRepo:
             (order_id, total_price, status, product_name, quantity, price)
             for order_id, total_price, status, product_name, quantity, price in result.all()
         ]
+
+    async def get_count_of_orders(self):
+        result = await self.session.execute(select(func.count(Order.id)))
+        return result.scalar_one()
+
+    async def get_cost_active_orders(self):
+        result = await self.session.execute(
+            select(func.coalesce(
+                    func.sum(OrderItem.quantity * OrderItem.price_at_time),
+                    0,
+                )
+            ).join(
+                Order,
+                Order.id == OrderItem.order_id,
+            )
+            .where(
+                Order.status.in_(
+                    [
+                        "created",
+                        "processing",
+                        "paid",
+                    ]
+                )
+            )
+        )
+
+        return result.scalar_one()
+
