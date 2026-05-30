@@ -1,7 +1,7 @@
 from sqlalchemy import delete, func, select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from market.bot.database.models import Basket, BasketItem, Product
+from market.database.models import Basket, BasketItem, Product
 
 
 class BasketRepo:

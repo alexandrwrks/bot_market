@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from market.crm.schemas.login import LoginUser
 
-from market.crm.database.models import Users
-from market.crm.database.config import new_session
+from market.crm_database import Users
+from market.crm_database import new_session
 
 
 class UserRepo:

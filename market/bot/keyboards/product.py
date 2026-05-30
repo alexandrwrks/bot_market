@@ -1,6 +1,6 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from market.bot.database.models import Product
+from market.database.models import Product
 
 
 def get_product_keyboard(slug: str, product_id: int):

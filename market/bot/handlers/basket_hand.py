@@ -2,7 +2,7 @@ from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery
 
-from market.bot.database.config import logger
+from market.utils import logger
 from market.bot.exception.basket_ex import ClearBasketError, NotProductsInBasket
 from market.bot.exception.product_ex import NotFoundProductError
 from market.bot.exception.user_ex import NotFoundUserError

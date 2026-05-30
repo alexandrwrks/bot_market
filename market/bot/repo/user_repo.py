@@ -2,7 +2,7 @@ from aiogram.types import User as TgUser
 from sqlalchemy import select, update, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from market.bot.database.models import User
+from market.database.models import User
 
 
 class UserRepo:

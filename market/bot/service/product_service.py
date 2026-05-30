@@ -1,4 +1,5 @@
-from market.bot.database.config import SessionLocal, logger
+from market.database.config import SessionLocal
+from market.utils import logger
 from market.bot.exception.product_ex import (
     NotFoundProductError,
     NotEnoughProductQuantityError,

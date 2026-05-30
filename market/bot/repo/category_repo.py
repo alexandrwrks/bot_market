@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from market.bot.database.models import Category, Product
+from market.database.models import Category, Product
 
 
 class CategoryRepo:

@@ -1,4 +1,4 @@
-from market.crm.database.config import new_session
+from market.crm_database import new_session
 
 from market.crm.repo.user_repo import UserRepo
 

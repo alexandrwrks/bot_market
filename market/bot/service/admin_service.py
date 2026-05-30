@@ -2,7 +2,7 @@ from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError
 
 from market.bot.config import settings
-from market.bot.database.config import logger
+from market.utils import logger
 
 
 class AdminNotificationService:

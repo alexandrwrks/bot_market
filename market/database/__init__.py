@@ -1,5 +1,6 @@
-from market.bot.database import models
-from market.bot.database.config import lite_engine, Base
+from market.database import models
+from market.database.config import lite_engine
+from market.database.models import Base
 
 
 async def init_db() -> None:

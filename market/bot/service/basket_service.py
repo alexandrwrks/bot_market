@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from market.bot.database.config import SessionLocal, logger
+from market.database.config import SessionLocal
+from market.utils import logger
 from market.bot.exception.basket_ex import (
     AddProductToBasketError,
     NotEnoughProductQuantityError,

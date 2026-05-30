@@ -1,7 +1,7 @@
 from sqlalchemy import select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from market.bot.database.models import Order, OrderItem, Product
+from market.database.models import Order, OrderItem, Product
 
 
 class OrderRepo:

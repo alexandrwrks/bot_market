@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from market.bot.database.models import Product, Category
+from market.database.models import Product, Category
 from market.bot.exception.product_ex import NotEnoughProductQuantityError
 
 

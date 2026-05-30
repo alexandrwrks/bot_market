@@ -1,4 +1,4 @@
-from market.bot.database.config import SessionLocal
+from market.database.config import SessionLocal
 from market.bot.exception.category_ex import NotCategoryError
 from market.bot.repo.category_repo import CategoryRepo
 

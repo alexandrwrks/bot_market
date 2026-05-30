@@ -1,10 +1,11 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, ForeignKey, Integer, String, TIMESTAMP, func, text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 
-from market.bot.database.config import Base
 
+class Base(DeclarativeBase):
+    pass
 
 class User(Base):
     __tablename__ = "users"

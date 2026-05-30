@@ -2,7 +2,7 @@ import asyncio
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from market.bot.database.config import SessionLocal
+from market.database import SessionLocal
 from market.bot.repo.basket_repo import BasketRepo
 
 
