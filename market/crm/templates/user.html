@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/static/user.css">
 </head>
 <body>
-    <a href="index.html">Вернуться на главную</a>
-    <div class="users-grid">
-       {% for user in users %}
-          <div class="user-card">
-              <p><b>ID:</b>{{ user.id }}</p>
-              <p><b>Имя:</b>{{ user.name }}</p>
-              <p><b>Заказы:</b>{{ user.count }}</p>
-              <a class="btn" href="/users/{{ user.id }}">Открыть панель</a>
-          </div>
-       {% endfor %}
+    <h1>User Details</h1>
+
+    <div>
+        <p>ID: {{ user.telegram_id }}</p>
+        <p>Name: {{ user.first_name }}</p>
+        {% if user.username %}
+        <p>Username: {{ user.username }}</p>
+        {% endif %}
+        <p>Дата регистрации: {{ user.created_at }}</p>
+        <p>Количество заказов: {{ count_of_order }}</p>
+        <p>Общая сумма заказов: {{ order_cost }}</p>
     </div>
 </body>
 

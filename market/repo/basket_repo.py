@@ -162,8 +162,7 @@ class BasketRepo:
                 func.coalesce(
                     func.sum(BasketItem.quantity * BasketItem.price_at_time), 0
                 )
-            )
-            .where(
+            ).where(
                 BasketItem.basket_id == basket_id,
             )
         )

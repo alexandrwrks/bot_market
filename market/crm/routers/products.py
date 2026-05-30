@@ -14,10 +14,5 @@ router = APIRouter(
 async def get_products(request: Request):
     products = await products_service.get_all_products()
     return templates.TemplateResponse(
-        name="products.html",
-        request=request,
-        context={
-            "products": products
-        }
+        name="products.html", request=request, context={"products": products}
     )
-

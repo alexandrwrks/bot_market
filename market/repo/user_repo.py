@@ -37,3 +37,7 @@ class UserRepo:
         await self.session.execute(
             update(User).where(User.telegram_id == telegram_id).values(admin=True)
         )
+
+    async def get_all_users(self):
+        result = await self.session.execute(select(User))
+        return result.scalars().all()

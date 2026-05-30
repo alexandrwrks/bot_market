@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class DashboardData(BaseModel):
     count_clients: int
     count_deal: int

@@ -86,11 +86,13 @@ class OrderRepo:
 
     async def get_cost_active_orders(self):
         result = await self.session.execute(
-            select(func.coalesce(
+            select(
+                func.coalesce(
                     func.sum(OrderItem.quantity * OrderItem.price_at_time),
                     0,
                 )
-            ).join(
+            )
+            .join(
                 Order,
                 Order.id == OrderItem.order_id,
             )
@@ -107,3 +109,17 @@ class OrderRepo:
 
         return result.scalar_one()
 
+    async def get_count_of_order(self, telegram_id: int):
+        result = await self.session.execute(
+            select(func.count(Order.id)).where(Order.telegram_id == telegram_id)
+        )
+        return result.scalar_one()
+
+    async def get_order_cost(self, telegram_id: int):
+        result = await self.session.execute(
+            select(func.coalesce(func.sum(Order.total_price), 0)).where(
+                Order.telegram_id == telegram_id
+            )
+        )
+
+        return result.scalar_one()

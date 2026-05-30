@@ -3,7 +3,7 @@ from aiogram.types import User as TgUser
 from market.database.config import SessionLocal
 from market.utils import logger
 from market.bot.exception.user_ex import UserAdminLicense, NotFoundUserError
-from market.repo import BasketRepo
+from market.repo import BasketRepo, order_repo, OrderRepo
 from market.repo.user_repo import UserRepo
 
 
@@ -68,6 +68,27 @@ class UserService:
                         "Ошибка добавления админки для пользователя=%s", telegram_id
                     )
                     raise
+
+    async def get_all_users(self):
+        async with SessionLocal() as session:
+            async with session.begin():
+                user_repo = UserRepo(session)
+
+                users = await user_repo.get_all_users()
+
+                return users
+
+    async def get_user_details_by_telegram_id(self, telegram_id: int):
+        async with SessionLocal() as session:
+            async with session.begin():
+                user_repo = UserRepo(session)
+                order_repo = OrderRepo(session)
+
+                user = await user_repo.get_user(telegram_id)
+                count_of_order = await order_repo.get_count_of_order(telegram_id)
+                order_cost = await order_repo.get_order_cost(telegram_id)
+
+                return user, count_of_order, order_cost
 
 
 user_service = UserService()

@@ -23,9 +23,7 @@ class DashboardService:
                 cost = await order_repo.get_cost_active_orders()
 
                 return DashboardData(
-                    count_clients=users,
-                    count_deal=orders,
-                    count_revenue=cost
+                    count_clients=users, count_deal=orders, count_revenue=cost
                 )
 
             except Exception as e:

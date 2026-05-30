@@ -80,14 +80,19 @@ class OrderService:
             basket_repo = BasketRepo(session)
             try:
                 async with session.begin():
-                    basket_id = await basket_repo.get_basket_id_by_id(telegram_id=telegram_id)
-                    total_price = await basket_repo.get_active_basket_total_price_by_basket(basket_id=basket_id)
+                    basket_id = await basket_repo.get_basket_id_by_id(
+                        telegram_id=telegram_id
+                    )
+                    total_price = (
+                        await basket_repo.get_active_basket_total_price_by_basket(
+                            basket_id=basket_id
+                        )
+                    )
 
                     return total_price
 
             except Exception:
                 logger.exception("Ошибка")
-
 
     async def get_user_orders(self, telegram_id: int):
         """Выдаём все заказы которые есть у пользователя"""
@@ -157,7 +162,9 @@ class OrderService:
             basket_repo = BasketRepo(session)
 
             basket_id = await basket_repo.get_basket_id_by_id(telegram_id=telegram_id)
-            basket_price = await basket_repo.get_active_basket_total_price_by_basket(basket_id=basket_id)
+            basket_price = await basket_repo.get_active_basket_total_price_by_basket(
+                basket_id=basket_id
+            )
 
             return basket_price
 

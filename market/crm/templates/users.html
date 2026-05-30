@@ -25,16 +25,18 @@
                 <tr>
                     <th>ID</th>
                     <th>Имя</th>
-                    <th>Количество заказов</th>
+                    <th>Время регистрации</th>
+                    <th>Подробнее</th>
                 </tr>
             </thead>
 
             <tbody>
                 {% for user in users %}
                 <tr>
-                    <td>ID: <b>{{ user.id }}</b></td>
-                    <td>Имя: <b>{{ user.name }}</b></td>
-                    <td>Количество заказов: <b>{{ user.count }}</b></td>
+                    <td>{{ user.telegram_id }}</td>
+                    <td>{{ user.first_name }}</td>
+                    <td>{{ user.created_at }}</td>
+                    <td><a href="/users/telegram/{{ user.telegram_id }}">Подробнее</a></td>
                 </tr>
 
                 {% endfor %}

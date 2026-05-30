@@ -12,5 +12,4 @@ class ProductsService:
             return products
 
 
-
 products_service = ProductsService()
