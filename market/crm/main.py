@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
-from market.crm_database import init_db
+from market.database import init_db
 
 from market.crm.routers import handlers
 from fastapi.staticfiles import StaticFiles

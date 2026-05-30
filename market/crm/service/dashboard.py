@@ -1,12 +1,12 @@
-from market.crm_database import new_session
+from market.database.config import SessionLocal
 
-from market.crm.repo.user_repo import UserRepo
+from market.repo import CRMRepo
 
 
 class DashboardService:
     async def get_all_client(self) -> int:
-        async with new_session() as session:
-            user_repo = UserRepo(session)
+        async with SessionLocal() as session:
+            user_repo = CRMRepo(session)
 
             count = await user_repo.get_count_of_clients()
             return count

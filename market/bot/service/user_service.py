@@ -3,8 +3,8 @@ from aiogram.types import User as TgUser
 from market.database.config import SessionLocal
 from market.utils import logger
 from market.bot.exception.user_ex import UserAdminLicense, NotFoundUserError
-from market.bot.repo.basket_repo import BasketRepo
-from market.bot.repo.user_repo import UserRepo
+from market.repo import BasketRepo
+from market.repo.user_repo import UserRepo
 
 
 class UserService:

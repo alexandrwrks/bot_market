@@ -3,32 +3,32 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from market.crm.schemas.login import LoginUser
 
-from market.crm_database import Users
-from market.crm_database import new_session
+from market.database.models import User
+from market.database.config import SessionLocal
 
 
-class UserRepo:
+class CRMRepo:
     def __init__(self, session: AsyncSession):
         self._session = session
 
-    async def exist_email(self, user: LoginUser):
-        result = await self._session.execute(
-            select(Users).where(Users.email == user.email)
-        )
-
-        return result.scalar_one_or_none()
+    # async def exist_email(self, user: LoginUser):
+    #     result = await self._session.execute(
+    #         select(User).where(User.email == user.email)
+    #     )
+    #
+    #     return result.scalar_one_or_none()
 
     async def get_count_of_clients(self) -> int:
-        result = await self._session.execute(select(func.count(Users.id)))
+        result = await self._session.execute(select(func.count(User.id)))
         count = result.scalar_one()
         return count
 
 
 class TestUserRepo:
     async def create_user(self, user: LoginUser):
-        async with new_session() as session:
+        async with SessionLocal() as session:
             await session.execute(
-                insert(Users).values(
+                insert(User).values(
                     email=user.email,
                     password=user.password,
                 )

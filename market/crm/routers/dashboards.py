@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from market.crm.config_template import templates
+from market.crm.service import dashboard_service
 
 router = APIRouter(
     prefix="/dashboard",
@@ -12,7 +13,7 @@ router = APIRouter(
 
 
 class DashboardData(BaseModel):
-    count_clients: int = 10
+    count_clients: int = 1
     count_deal: int = 3
     count_tasks: int = 4
     count_revenue: int = 140000
@@ -34,6 +35,7 @@ class DashboardData(BaseModel):
 
 @router.get("/", name="dashboard_page", response_class=HTMLResponse)
 async def client_dashboard(request: Request):
+
     datas = DashboardData()
     return templates.TemplateResponse(
         request=request,

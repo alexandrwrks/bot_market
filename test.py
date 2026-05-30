@@ -3,7 +3,7 @@ import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from market.database import SessionLocal
-from market.bot.repo.basket_repo import BasketRepo
+from market.repo import BasketRepo
 
 
 async def print_total_price(telegram_id: int, session: AsyncSession):

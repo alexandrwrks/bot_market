@@ -6,8 +6,8 @@ from market.bot.exception.order_ex import (
     CostEnoughError,
     CreateOrderError,
 )
-from market.bot.repo.basket_repo import BasketRepo
-from market.bot.repo.order_repo import OrderRepo
+from market.repo import BasketRepo
+from market.repo.order_repo import OrderRepo
 
 
 class OrderService:

@@ -5,7 +5,7 @@ from market.bot.exception.product_ex import (
     NotEnoughProductQuantityError,
     NoProductsInCategoryError,
 )
-from market.bot.repo.product_repo import ProductRepo
+from market.repo.product_repo import ProductRepo
 
 
 class ProductService:

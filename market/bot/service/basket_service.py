@@ -10,8 +10,8 @@ from market.bot.exception.basket_ex import (
 )
 from market.bot.exception.product_ex import NotFoundProductError
 from market.bot.exception.user_ex import NotFoundUserError
-from market.bot.repo.basket_repo import BasketRepo
-from market.bot.repo.product_repo import ProductRepo
+from market.repo import BasketRepo
+from market.repo.product_repo import ProductRepo
 
 
 @dataclass

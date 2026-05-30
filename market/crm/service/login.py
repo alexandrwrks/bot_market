@@ -1,12 +1,12 @@
-from market.crm_database import new_session
-from market.crm.repo.user_repo import UserRepo
+from market.database.config import SessionLocal
+from market.repo import CRMRepo
 from market.crm.schemas.login import LoginUser
 
 
 class LoginService:
     async def login(self, user: LoginUser):
-        async with new_session() as session:
-            user_repo = UserRepo(session)
+        async with SessionLocal() as session:
+            user_repo = CRMRepo(session)
 
 
 login_service = LoginService()

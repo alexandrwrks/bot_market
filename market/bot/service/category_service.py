@@ -1,6 +1,6 @@
 from market.database.config import SessionLocal
 from market.bot.exception.category_ex import NotCategoryError
-from market.bot.repo.category_repo import CategoryRepo
+from market.repo.category_repo import CategoryRepo
 
 
 class CategoryService:
