@@ -2,7 +2,7 @@ import asyncio
 
 from aiogram import Bot, Dispatcher
 
-from market.bot.config import settings
+from market.utils.config import settings
 from market.database import init_db
 from market.bot.handlers import routers
 from market.bot.service.user_service import user_service

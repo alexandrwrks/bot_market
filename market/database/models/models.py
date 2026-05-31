@@ -67,7 +67,7 @@ class Product(Base):
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     photo_path: Mapped[str] = mapped_column(String, nullable=False)
     is_active: Mapped[bool] = mapped_column(
-        Boolean, server_default=text("1"), nullable=False
+        Boolean, server_default=text("true"), nullable=False
     )
 
     category: Mapped["Category"] = relationship(back_populates="products")

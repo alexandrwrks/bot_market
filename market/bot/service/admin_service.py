@@ -1,7 +1,7 @@
 from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError
 
-from market.bot.config import settings
+from market.utils.config import settings
 from market.utils import logger
 
 

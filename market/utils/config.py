@@ -3,7 +3,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     BOT_TOKEN: str
-    SQLITE_DATABASE_URL: str
 
     DB_HOST: str
     DB_PORT: int
@@ -25,6 +24,15 @@ class Settings(BaseSettings):
     def DATABASE_URL(self):
         return (
             f"postgresql+asyncpg://"
+            f"{self.DB_USER}:{self.DB_PASSWORD}"
+            f"@{self.DB_HOST}:{self.DB_PORT}"
+            f"/{self.DB_NAME}"
+        )
+
+    @property
+    def alembic_database_url(self):
+        return (
+            f"postgresql://"
             f"{self.DB_USER}:{self.DB_PASSWORD}"
             f"@{self.DB_HOST}:{self.DB_PORT}"
             f"/{self.DB_NAME}"

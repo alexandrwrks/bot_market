@@ -12,8 +12,6 @@ router = Router()
 
 @router.callback_query(F.data == "catalog_btn")
 async def get_categories_of_catalog(callback: CallbackQuery):
-    await callback.answer()
-
     try:
         categories = await category_service.get_categories()
 
@@ -30,9 +28,13 @@ async def get_categories_of_catalog(callback: CallbackQuery):
                 text="Выберите категорию:",
                 reply_markup=keyboard,
             )
-
+        finally:
+            await callback.answer()
     except NotCategoryError:
-        await callback.message.answer("Сейчас нет доступных категорий.")
+        await callback.answer(
+            text="Сейчас нет доступных категорий.",
+            show_alert=True,
+        )
 
 
 @router.message(Command("catalog"))

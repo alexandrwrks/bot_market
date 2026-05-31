@@ -58,7 +58,7 @@ async def get_information_about_product(callback: CallbackQuery, state: FSMConte
 
     parts = callback.data.split(":")
     slug = parts[1]
-    product_id = parts[2]
+    product_id = int(parts[2])
 
     try:
         product = await product_service.get_information_about_product(
