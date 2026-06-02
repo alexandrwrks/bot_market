@@ -139,3 +139,14 @@ class OrderRepo:
         )
 
         return result.scalars().all()
+
+
+    async def get_user_orders_info(self, telegram_id: int):
+        result = await self.session.execute(
+            select(Order)
+            .where(
+                Order.telegram_id == telegram_id
+            )
+        )
+
+        return result.scalars().all()

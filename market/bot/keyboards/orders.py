@@ -21,7 +21,7 @@ def get_basket_and_catalog():
     keyboard.button(text="🗑 Корзина", callback_data="basket_btn")
     keyboard.button(text="📂 Каталог", callback_data="catalog_btn")
 
-    return keyboard.adjust(1).as_markup()
+    return keyboard.adjust(2).as_markup()
 
 
 def get_confirm_order():
@@ -31,3 +31,11 @@ def get_confirm_order():
     keyboard.button(text="✅ Подтвердить", callback_data="done_btn")
 
     return keyboard.adjust(2).as_markup()
+
+
+def get_detail_keyboard(order_id: int):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.button(text="Подробнее", callback_data=f"detail_order:{order_id}")
+
+    return keyboard.adjust(1).as_markup()

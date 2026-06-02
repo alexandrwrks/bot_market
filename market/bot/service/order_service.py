@@ -9,6 +9,10 @@ from market.bot.exception.order_ex import (
 from market.repo import BasketRepo
 from market.repo.order_repo import OrderRepo
 
+from typing import List
+from market.database.models import Order
+from market.schemas.schema import UserOrderInfo
+from datetime import datetime
 
 class OrderService:
     async def create_order(self, telegram_id: int, user_data: dict):
@@ -94,25 +98,31 @@ class OrderService:
             except Exception:
                 logger.exception("Ошибка")
 
-    async def get_user_orders(self, telegram_id: int):
+    async def get_user_orders(self, telegram_id: int) -> List[Order]:
         """Выдаём все заказы которые есть у пользователя"""
         async with SessionLocal() as session:
+            order_repo = OrderRepo(session)
             try:
-                order_repo = OrderRepo(session)
-
-                orders = await order_repo.get_user_orders(telegram_id)
-
+                orders = await order_repo.get_user_orders_info(telegram_id=telegram_id)
                 if not orders:
                     raise NotUserOrder()
 
-                return orders
+                lst_orders = []
+                for order in orders:
+                    lst_orders.append(
+                        UserOrderInfo(
+                            id=order.id,
+                            total_price=order.total_price,
+                            status=order.status,
+                            created_at = order.created_at.strftime("%d.%m.%Y %H:%M"),
+                        )
+                    )
 
-            except NotUserOrder:
-                return []
+                return lst_orders
 
             except Exception:
                 logger.exception("Ошибка выдачи заказов пользователя=%s", telegram_id)
-                return []
+                raise
 
     async def get_order_details(self, telegram_id: int, order_id: int):
         async with SessionLocal() as session:
