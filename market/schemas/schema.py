@@ -6,3 +6,19 @@ class UserOrderInfo(BaseModel):
     total_price: int
     status: str
     created_at: str
+
+class OrderInfoItem(BaseModel):
+    name: str
+    quantity: int
+    price: int
+
+    @property
+    def total(self):
+        return self.quantity * self.price
+
+class OrderInfo(BaseModel):
+    id: int
+    total_price: int
+    status: str
+    created_at: str
+    items: list[OrderInfoItem]

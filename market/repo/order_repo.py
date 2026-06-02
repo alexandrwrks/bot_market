@@ -150,3 +150,23 @@ class OrderRepo:
         )
 
         return result.scalars().all()
+
+    async def get_user_order_info(self, order_id: int):
+        result = await self.session.execute(
+            select(Order)
+            .where(
+                Order.id == order_id
+            )
+        )
+
+        return result.scalar_one_or_none()
+
+    async def get_order_items(self, order_id: int):
+        result = await self.session.execute(
+            select(OrderItem)
+            .where(
+                OrderItem.order_id == order_id
+            )
+        )
+
+        return result.scalars().all()
