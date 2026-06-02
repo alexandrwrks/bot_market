@@ -1,9 +1,16 @@
+from enum import Enum
+
 from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError
 
+from typing import List
+from market.bot.exception.admin_ex import AdminInfoError
+from market.database.config import SessionLocal
+from market.repo import UserRepo, OrderRepo
 from market.utils.config import settings
 from market.utils import logger
 
+from pydantic import BaseModel
 
 class AdminNotificationService:
     def __init__(self, bot: Bot):
@@ -29,3 +36,67 @@ class AdminNotificationService:
 
             except TelegramAPIError:
                 logger.exception("Ошибка отправки сообщений админам")
+
+
+class AdminInfo(BaseModel):
+    users: int
+    orders: int
+
+class Status(str, Enum):
+    created = "created"
+    processing = "processing"
+    paid = "paid"
+
+
+class AdminOrders(BaseModel):
+    number: int
+    name: str
+    phone: str
+    total_price: int
+    status: Status
+
+class AdminService:
+    async def get_admin_info(self) -> AdminInfo:
+        async with SessionLocal() as session:
+            user_repo = UserRepo(session)
+            order_repo = OrderRepo(session)
+            try:
+                users = await user_repo.get_count_users()
+                orders = await order_repo.get_count_of_orders()
+
+                return AdminInfo(
+                    users=users,
+                    orders=orders,
+                )
+
+            except Exception as e:
+                logger.exception(e)
+                raise
+
+    async def get_admin_orders(self) -> List[AdminOrders]:
+        async with SessionLocal() as session:
+            order_repo = OrderRepo(session)
+            try:
+                orders = await order_repo.get_active_users_orders()
+
+                lst_orders = []
+                for order in orders:
+                    lst_orders.append(
+                        AdminOrders(
+                            number=order.id, # номер телефона
+                            name=order.name, # имя пользователя
+                            phone=order.phone, # номер телефона
+                            total_price=order.total_price, # стоимость заказа
+                            status=Status(order.status), # статус заказа
+                        )
+                )
+
+                return lst_orders
+
+            except Exception as e:
+                logger.exception(e)
+                raise
+
+
+
+admin_service = AdminService()

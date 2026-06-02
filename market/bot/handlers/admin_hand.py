@@ -1,13 +1,17 @@
 from aiogram import F, Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
+from fastapi import Depends
 
+from market.bot.exception.admin_ex import AdminInfoError
 from market.bot.exception.user_ex import UserAdminLicense, NotFoundUserError
 from market.bot.keyboards.admin_keyboars import (
     get_back_admin_keyboard,
-    get_admin_inline_keyboard,
+    get_admin_inline_keyboard, get_different_keyboard,
 )
 from market.bot.keyboards.start import get_start_inline_keyboard
+from market.bot.service.admin_service import admin_service, AdminInfo
 from market.bot.service.user_service import user_service
 
 router = Router()
@@ -82,26 +86,69 @@ async def admin_update_products_callback(callback: CallbackQuery):
 
 @router.callback_query(F.data == "admin_orders")
 async def admin_orders_callback(callback: CallbackQuery):
+    await callback.answer()
     """
     Просмотр всех новых заказов которые появились,
     кроме → отменённых и доставленных/выполненных
     """
-    await callback.answer()
-    await callback.message.edit_text(
-        text="Раздел заказов находится в разработке. Попробуйте позже.",
-        reply_markup=get_back_admin_keyboard(),
-    )
+    try:
+        orders = await admin_service.get_admin_orders()
+
+        for order in orders:
+            text = (
+                f"НОМЕР ЗАКАЗА №{order.number}\n"
+                f"Имя пользователя: {order.name}\n"
+                f"Номер телефона: {order.phone}\n"
+                f"Стоимость заказа: {order.total_price}\n"
+                f"Статус заказа: {order.status.value}"
+            )
+
+            await callback.message.answer(text=text)
+
+        await callback.message.answer(
+            text="Выберите следующие действие:",
+            reply_markup=get_back_admin_keyboard(),
+        )
+
+
+    except Exception:
+        await callback.message.answer(
+            text="Ошибка сервера. Попробуйте позже.",
+            reply_markup=get_back_admin_keyboard(),
+        )
 
 
 @router.callback_query(F.data == "admin_statistics")
 async def admin_statistics_callback(callback: CallbackQuery):
+    await callback.answer()
     """
     Показ статистики бота:
     1) количество заказов
     2) количество новых пользователей
     """
-    await callback.answer()
-    await callback.message.edit_text(
-        text="Раздел статистика находится в разработке. Попробуйте позже.",
-        reply_markup=get_back_admin_keyboard(),
-    )
+    try:
+        admin_info = await admin_service.get_admin_info()
+
+        text = (
+            f"\tСтатистика:\n"
+            f"Пользователи: {admin_info.users}\n"
+            f"Заказы: {admin_info.orders}"
+        )
+
+        try:
+            await callback.message.edit_text(
+                text=text,
+                reply_markup=get_different_keyboard(),
+            )
+
+        except TelegramBadRequest:
+            await callback.message.answer(
+                text=text,
+                reply_markup=get_different_keyboard(),
+            )
+
+    except Exception:
+        await callback.answer(
+            text="Ошибка сервера",
+            show_alert=True,
+        )

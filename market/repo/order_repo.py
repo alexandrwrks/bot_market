@@ -123,3 +123,19 @@ class OrderRepo:
         )
 
         return result.scalar_one()
+
+    async def get_active_users_orders(self):
+        result = await self.session.execute(
+            select(Order)
+            .where(
+                Order.status.in_(
+                    [
+                        "created",
+                        "processing",
+                        "paid",
+                    ]
+                )
+            )
+        )
+
+        return result.scalars().all()

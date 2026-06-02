@@ -1,5 +1,5 @@
 from aiogram.types import User as TgUser
-from sqlalchemy import select, update, insert
+from sqlalchemy import select, update, insert, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from market.database.models import User
@@ -41,3 +41,7 @@ class UserRepo:
     async def get_all_users(self):
         result = await self.session.execute(select(User))
         return result.scalars().all()
+
+    async def get_count_users(self):
+        result = await self.session.execute(select(func.count(User.id)))
+        return result.scalar_one_or_none()
