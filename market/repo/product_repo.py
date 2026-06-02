@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -98,3 +98,21 @@ class ProductRepo:
         result = await self.session.execute(select(Product))
 
         return result.scalars().all()
+
+    async def get_product_by_product_id(self, product_id: int) -> Product:
+        result = await self.session.execute(
+            select(Product)
+            .where(Product.id == product_id)
+        )
+
+        return result.scalar_one()
+
+    async def get_admin_products_by_slug(self, slug: str) -> List[Product]:
+        result = await self.session.execute(
+            select(Product)
+            .join(Category, Product.category_id == Category.id)
+            .where(Category.slug == slug)
+            .order_by(Product.id)
+        )
+
+        return list(result.scalars().all())

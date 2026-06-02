@@ -1,4 +1,5 @@
 from market.database.config import SessionLocal
+from market.database.models import Product
 from market.utils import logger
 from market.bot.exception.product_ex import (
     NotFoundProductError,
@@ -9,10 +10,7 @@ from market.repo.product_repo import ProductRepo
 
 
 class ProductService:
-    async def get_products_by_category(
-        self,
-        slug: str,
-    ):
+    async def get_products_by_category(self, slug: str):
         """
         router -> category:
         Показываем все доступные товары по выбранной категории
@@ -24,7 +22,7 @@ class ProductService:
             if not products:
                 raise NoProductsInCategoryError()
 
-            logger.info("Успешное получение товаров по категории")
+            logger.info(f"Успешное получение товаров по категории {slug}")
 
             return products
 
@@ -52,5 +50,18 @@ class ProductService:
                     )
                     raise NotFoundProductError()
 
+    async def get_product_information(self, product_id: int) -> Product:
+        async with SessionLocal() as session:
+            product_repo = ProductRepo(session)
+            try:
+                product = await product_repo.get_product_by_product_id(product_id)
+                if not product:
+                    raise NotFoundProductError()
+
+                return product
+
+            except Exception as e:
+                logger.exception(e)
+                raise
 
 product_service = ProductService()

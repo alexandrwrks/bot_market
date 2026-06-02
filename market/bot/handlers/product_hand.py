@@ -91,7 +91,7 @@ async def get_information_about_product(callback: CallbackQuery, state: FSMConte
 
     except Exception:
         await callback.answer(
-            text="Произошла ошибка. ПОпробуйте позже", show_alert=True
+            text="Произошла ошибка. Попробуйте позже", show_alert=True
         )
 
 
