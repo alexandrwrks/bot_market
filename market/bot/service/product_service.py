@@ -64,4 +64,5 @@ class ProductService:
                 logger.exception(e)
                 raise
 
+
 product_service = ProductService()

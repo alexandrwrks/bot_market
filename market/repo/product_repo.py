@@ -101,8 +101,7 @@ class ProductRepo:
 
     async def get_product_by_product_id(self, product_id: int) -> Product:
         result = await self.session.execute(
-            select(Product)
-            .where(Product.id == product_id)
+            select(Product).where(Product.id == product_id)
         )
 
         return result.scalar_one()

@@ -94,7 +94,7 @@ class OrderService:
                             id=order.id,
                             total_price=order.total_price,
                             status=order.status,
-                            created_at = order.created_at.strftime("%d.%m.%Y %H:%M"),
+                            created_at=order.created_at.strftime("%d.%m.%Y %H:%M"),
                         )
                     )
 
@@ -142,9 +142,10 @@ class OrderService:
                     return True
 
                 except Exception:
-                    logger.exception("Ошибка проверки корзины пользователя=%s", telegram_id)
+                    logger.exception(
+                        "Ошибка проверки корзины пользователя=%s", telegram_id
+                    )
                     raise
-
 
     async def get_user_order_info(self, order_id: int) -> OrderInfo:
         async with SessionLocal() as session:
@@ -171,7 +172,7 @@ class OrderService:
                     id=order.id,
                     total_price=order.total_price,
                     status=order.status,
-                    created_at = order.created_at.strftime("%d.%m.%Y %H:%M"),
+                    created_at=order.created_at.strftime("%d.%m.%Y %H:%M"),
                     items=items,
                 )
 
@@ -180,5 +181,6 @@ class OrderService:
             except Exception as e:
                 logger.exception("Ошибка: ", e)
                 raise
+
 
 order_service = OrderService()

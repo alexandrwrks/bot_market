@@ -12,6 +12,7 @@ from market.utils import logger
 
 from pydantic import BaseModel
 
+
 class AdminNotificationService:
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -42,6 +43,7 @@ class AdminInfo(BaseModel):
     users: int
     orders: int
 
+
 class Status(str, Enum):
     created = "created"
     processing = "processing"
@@ -54,6 +56,7 @@ class AdminOrders(BaseModel):
     phone: str
     total_price: int
     status: Status
+
 
 class AdminService:
     async def get_admin_info(self) -> AdminInfo:
@@ -83,20 +86,19 @@ class AdminService:
                 for order in orders:
                     lst_orders.append(
                         AdminOrders(
-                            number=order.id, # номер телефона
-                            name=order.name, # имя пользователя
-                            phone=order.phone, # номер телефона
-                            total_price=order.total_price, # стоимость заказа
-                            status=Status(order.status), # статус заказа
+                            number=order.id,  # номер телефона
+                            name=order.name,  # имя пользователя
+                            phone=order.phone,  # номер телефона
+                            total_price=order.total_price,  # стоимость заказа
+                            status=Status(order.status),  # статус заказа
                         )
-                )
+                    )
 
                 return lst_orders
 
             except Exception as e:
                 logger.exception(e)
                 raise
-
 
 
 admin_service = AdminService()

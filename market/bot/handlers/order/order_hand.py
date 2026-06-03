@@ -26,7 +26,9 @@ async def orders_btn(callback: CallbackQuery):
 
             await callback.message.answer(
                 text=text,
-                reply_markup=get_detail_keyboard(order.id), # Кнопка подробнее что вывести что находится в заказе
+                reply_markup=get_detail_keyboard(
+                    order.id
+                ),  # Кнопка подробнее что вывести что находится в заказе
             )
 
         await callback.message.answer(
@@ -56,7 +58,9 @@ async def get_order_message(message: Message):
 
             await message.answer(
                 text=text,
-                reply_markup=get_detail_keyboard(order.id), # Кнопка подробнее что вывести что находится в заказе
+                reply_markup=get_detail_keyboard(
+                    order.id
+                ),  # Кнопка подробнее что вывести что находится в заказе
             )
 
         await message.answer(
@@ -69,6 +73,7 @@ async def get_order_message(message: Message):
             text="У вас нет активных заказов",
             reply_markup=get_basket_and_catalog(),
         )
+
 
 @router.callback_query(F.data.startswith("detail_order:"))
 async def process_detail_order(callback: CallbackQuery):

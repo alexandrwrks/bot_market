@@ -7,6 +7,7 @@ class UserOrderInfo(BaseModel):
     status: str
     created_at: str
 
+
 class OrderInfoItem(BaseModel):
     name: str
     quantity: int
@@ -15,6 +16,7 @@ class OrderInfoItem(BaseModel):
     @property
     def total(self):
         return self.quantity * self.price
+
 
 class OrderInfo(BaseModel):
     id: int
