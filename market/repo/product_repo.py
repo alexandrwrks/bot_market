@@ -115,3 +115,10 @@ class ProductRepo:
         )
 
         return list(result.scalars().all())
+
+    async def update_product_price(self, product_id: int, new_price: int) -> None:
+        await self.session.execute(
+            update(Product)
+            .values(price=new_price)
+            .where(Product.id == product_id)
+        )

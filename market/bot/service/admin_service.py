@@ -6,7 +6,7 @@ from aiogram.exceptions import TelegramAPIError
 from typing import List
 from market.bot.exception.admin_ex import AdminInfoError
 from market.database.config import SessionLocal
-from market.repo import UserRepo, OrderRepo
+from market.repo import UserRepo, OrderRepo, ProductRepo
 from market.utils.config import settings
 from market.utils import logger
 
@@ -100,5 +100,17 @@ class AdminService:
                 logger.exception(e)
                 raise
 
+    async def set_access_price(self, product_id: int, new_price: int) -> None:
+        async with SessionLocal() as session:
+            product_repo = ProductRepo(session)
+            async with session.begin():
+                try:
+                    await product_repo.update_product_price(
+                        product_id=product_id, new_price=new_price
+                    )
+
+                except Exception as e:
+                    logger.exception(e)
+                    raise
 
 admin_service = AdminService()

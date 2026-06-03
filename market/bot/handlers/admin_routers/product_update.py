@@ -1,13 +1,16 @@
 from aiogram import Router, F
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.types import CallbackQuery, FSInputFile
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, FSInputFile, Message
 
 from market.bot.exception.product_ex import NotFoundProductError
 from market.bot.keyboards.admin_keyboards.product_update import (
     get_admin_products_keyboard,
     get_options_for_changes,
     get_exists_catalog_for_admin,
+    get_access_options,
 )
+from market.bot.service.admin_service import admin_service
 from market.bot.service.category_service import category_service
 from market.bot.service.product_service import product_service
 
@@ -119,3 +122,87 @@ async def process_admin_product(callback: CallbackQuery):
             text="Ошибка получения товара. Попробуйте позже.",
             show_alert=True,
         )
+
+
+from aiogram.fsm.state import State, StatesGroup
+
+class PriceChange(StatesGroup):
+    new_price = State()
+
+@router.callback_query(F.data.startswith("price_change:"))
+async def process_price_change(callback: CallbackQuery, state: FSMContext):
+    parts = callback.data.split(":")
+
+    slug = parts[1]
+    product_id = int(parts[2])
+
+    try:
+        await state.update_data(
+            slug=slug,
+            product_id=product_id,
+        )
+
+        await state.set_state(PriceChange.new_price)
+
+        await callback.message.answer(text="Напишите новую цену:")
+
+    except Exception as e:
+        await callback.answer(
+            text="Ошибка изменения цены. Попробуйте позже.",
+            show_alert=True,
+        )
+
+@router.message(PriceChange.new_price)
+async def process_new_price(message: Message, state: FSMContext):
+    try:
+        new_price = int(message.text)
+
+        if new_price < 0:
+            raise ValueError
+
+    except ValueError:
+        await message.answer("Введите корректную цену числом")
+        return
+
+    await state.update_data(new_price=new_price)
+
+    await message.answer(
+        text=f"Новая цена товара: {new_price}",
+        reply_markup=get_access_options()
+    )
+
+@router.callback_query(F.data == "access_price_change")
+async def access_price_change(callback: CallbackQuery, state: FSMContext):
+    try:
+        data = await state.get_data()
+
+        await admin_service.set_access_price(
+            product_id=data["product_id"],
+            new_price=data["new_price"],
+        )
+
+        await state.clear()
+
+        await callback.message.answer(
+            text="Успешное изменения цены!",
+            reply_markup=get_options_for_changes(slug=data["slug"], product_id=data["product_id"]),
+        )
+
+    except Exception:
+        await callback.answer(
+            text="Ошибка обновления цены",
+            show_alert=True,
+        )
+
+@router.callback_query(F.data == "delete_price_change")
+async def delete_price_change(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+
+    await state.clear()
+
+    await callback.message.answer(
+        text="Отмена изменения цены",
+        reply_markup=get_options_for_changes(
+            slug=data["slug"], product_id=data["product_id"],
+        )
+    )

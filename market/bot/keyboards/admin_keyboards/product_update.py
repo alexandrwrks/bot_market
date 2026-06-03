@@ -36,17 +36,17 @@ def get_options_for_changes(slug: str, product_id: int):
     цена, количество, фото, описание, удаление товара(мягкое),
     """
     keyboard.button(
-        text="Изменить цену товара", callback_data=f"price_change:{product_id}"
+        text="Изменить цену товара", callback_data=f"price_change:{slug}:{product_id}"
     )
     keyboard.button(
-        text="Изменить количество", callback_data=f"quantity_change:{product_id}"
+        text="Изменить количество", callback_data=f"quantity_change:{slug}:{product_id}"
     )
-    keyboard.button(text="Изменить фото", callback_data=f"photo_change:{product_id}")
+    keyboard.button(text="Изменить фото", callback_data=f"photo_change:{slug}:{product_id}")
     keyboard.button(
-        text="Изменить описание", callback_data=f"description_change:{product_id}"
+        text="Изменить описание", callback_data=f"description_change:{slug}:{product_id}"
     )
     keyboard.button(
-        text="❌ Мягкое удаление товара", callback_data=f"delete_change:{product_id}"
+        text="❌ Мягкое удаление товара", callback_data=f"delete_change:{slug}:{product_id}"
     )
 
     keyboard.button(
@@ -57,3 +57,12 @@ def get_options_for_changes(slug: str, product_id: int):
     )
 
     return keyboard.adjust(1, 1, 1, 1, 1, 2).as_markup()
+
+
+def get_access_options():
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.button(text="Отменить", callback_data="delete_price_change")
+    keyboard.button(text="Продолжить", callback_data="access_price_change")
+
+    return keyboard.adjust(1).as_markup()
