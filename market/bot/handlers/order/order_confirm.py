@@ -110,8 +110,6 @@ async def process_email(message: Message, state: FSMContext):
 
 @router.callback_query(F.data == "done_btn")
 async def create_order(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-
     user_data = await state.get_data()
 
     try:
@@ -119,7 +117,9 @@ async def create_order(callback: CallbackQuery, state: FSMContext):
             telegram_id=callback.from_user.id,
             user_data=user_data,
         )
+
         await state.clear()
+        await callback.answer()
 
         await callback.message.edit_text(
             text="✅ Заказ успешно оформлен. Мы скоро с вами свяжемся.",

@@ -36,6 +36,8 @@ async def cmd_start_callback(callback: CallbackQuery):
         )
 
     except Exception:
+        await callback.message.delete()
+
         await callback.message.answer(
             text=WELCOME_TEXT,
             reply_markup=keyboard,

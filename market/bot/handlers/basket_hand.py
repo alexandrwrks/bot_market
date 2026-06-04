@@ -37,6 +37,7 @@ async def _render_basket(callback: CallbackQuery) -> None:
             )
 
         except TelegramBadRequest:
+            await callback.message.delete()
             await callback.message.answer(
                 text=text,
                 reply_markup=keyboard,

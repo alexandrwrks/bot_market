@@ -54,18 +54,17 @@ async def get_products_by_categories(callback: CallbackQuery):
 
 @router.callback_query(F.data.startswith("product:"))
 async def get_information_about_product(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-
-    parts = callback.data.split(":")
-    slug = parts[1]
-    product_id = int(parts[2])
-
     try:
+        parts = callback.data.split(":")
+        slug = parts[1]
+        product_id = int(parts[2])
+
         product = await product_service.get_information_about_product(
             product_id=product_id
         )
         if not product:
             raise Exception()
+
         caption = (
             f"{product.name}\n\n"
             f"Описание: {product.description}\n\n"
@@ -75,6 +74,8 @@ async def get_information_about_product(callback: CallbackQuery, state: FSMConte
 
         await state.update_data(slug=slug)
 
+        await callback.answer()
+        await callback.message.delete()
         await callback.message.answer_photo(
             photo=FSInputFile(product.photo_path),
             caption=caption,
@@ -93,6 +94,7 @@ async def get_information_about_product(callback: CallbackQuery, state: FSMConte
         await callback.answer(
             text="Произошла ошибка. Попробуйте позже", show_alert=True
         )
+        return
 
 
 """
@@ -103,12 +105,11 @@ async def get_information_about_product(callback: CallbackQuery, state: FSMConte
 
 @router.callback_query(F.data.startswith("add_to_cart:"))
 async def add_product_to_basket(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-
-    product_id = int(callback.data.split(":")[1])
-    telegram_id = callback.from_user.id
-
     try:
+        product_id = int(callback.data.split(":")[1])
+        telegram_id = callback.from_user.id
+
+        await callback.answer()
         product_info = await basket_service.get_product_for_cart_input(
             telegram_id=telegram_id, product_id=product_id
         )
@@ -183,7 +184,5 @@ async def process_product_quantity(message: Message, state: FSMContext):
     if slug:
         await message.answer(
             text="Товар успешно добавлен в корзину",
-            reply_markup=get_product_keyboard_before(
-                slug=slug,
-            ),
+            reply_markup=get_product_keyboard_before(slug=slug),
         )

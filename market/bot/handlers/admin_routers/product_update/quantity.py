@@ -21,24 +21,22 @@ class QuantityChange(StatesGroup):
 
 @router.callback_query(F.data.startswith("quantity_change:"))
 async def process_price_change(callback: CallbackQuery, state: FSMContext):
-    print("quantity_change: отработал")
-    parts = callback.data.split(":")
-
-    slug = parts[1]
-    product_id = int(parts[2])
-
     try:
+        parts = callback.data.split(":")
+
+        slug = parts[1]
+        product_id = int(parts[2])
+
         await state.update_data(
             slug=slug,
             product_id=product_id,
         )
-        print("Обновление данных")
         await state.set_state(QuantityChange.new_quantity)
 
+        await callback.answer()
         await callback.message.answer(text="Напишите новое количество:")
 
     except Exception as e:
-        print(e)
         await callback.answer(
             text="Ошибка изменения количества. Попробуйте позже.",
             show_alert=True,
@@ -46,7 +44,6 @@ async def process_price_change(callback: CallbackQuery, state: FSMContext):
 
 @router.message(QuantityChange.new_quantity)
 async def process_new_price(message: Message, state: FSMContext):
-    print("отработка new_quantity")
     try:
         new_quantity = int(message.text)
 
@@ -59,7 +56,6 @@ async def process_new_price(message: Message, state: FSMContext):
 
     await state.update_data(new_quantity=new_quantity)
 
-    print("успешное обновление FSM")
     await message.answer(
         text=f"Количество товара: {new_quantity}",
         reply_markup=get_access_options_quantity()
@@ -67,10 +63,9 @@ async def process_new_price(message: Message, state: FSMContext):
 
 @router.callback_query(F.data == "access_quantity_change")
 async def access_price_change(callback: CallbackQuery, state: FSMContext):
-    print("Отработка access_quantity_change")
     try:
         data = await state.get_data()
-        print("получение данных")
+
         await admin_service.set_access_quantity(
             product_id=data["product_id"],
             new_quantity=data["new_quantity"],
@@ -89,13 +84,12 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
             f"В наличии: {product.quantity} шт."
         )
 
+        await callback.answer()
         await callback.message.answer_photo(
             photo=FSInputFile(product.photo_path),
             caption=caption,
             reply_markup=get_options_for_changes(slug=data["slug"], product_id=data["product_id"]),
         )
-
-        await callback.answer()
 
     except NotFoundProductError:
         await callback.message.answer(
@@ -126,13 +120,12 @@ async def delete_price_change(callback: CallbackQuery, state: FSMContext):
             f"В наличии: {product.quantity} шт."
         )
 
+        await callback.answer()
         await callback.message.answer_photo(
             photo=FSInputFile(product.photo_path),
             caption=caption,
             reply_markup=get_options_for_changes(slug=data["slug"], product_id=data["product_id"]),
         )
-
-        await callback.answer()
 
     except (Exception, NotFoundProductError):
         await callback.message.answer(

@@ -50,6 +50,7 @@ async def admin_update_products_callback(callback: CallbackQuery):
             )
 
         except TelegramBadRequest:
+            await callback.message.delete()
             await callback.message.answer(
                 text="Выберите категорию:",
                 reply_markup=get_exists_catalog_for_admin(categories),
@@ -75,13 +76,13 @@ async def process_admin_category(callback: CallbackQuery):
             )
 
         except TelegramBadRequest:
+            await callback.message.delete()
             await callback.message.answer(
                 text="Выберите товар:",
                 reply_markup=get_admin_products_keyboard(products, slug),
             )
 
     except Exception:
-        print("Ошибка на уровне Exception")
         await callback.answer(
             text=f"Ошибка выдачи товаров по категории",
             show_alert=True,
@@ -90,12 +91,12 @@ async def process_admin_category(callback: CallbackQuery):
 
 @router.callback_query(F.data.startswith("admin_product:"))
 async def process_admin_product(callback: CallbackQuery):
-    parts = callback.data.split(":")
-
-    slug = parts[1]
-    product_id = int(parts[2])
-
     try:
+        parts = callback.data.split(":")
+
+        slug = parts[1]
+        product_id = int(parts[2])
+
         product = await product_service.get_product_information(product_id=product_id)
 
         caption = (
@@ -105,6 +106,7 @@ async def process_admin_product(callback: CallbackQuery):
             f"В наличии: {product.quantity} шт."
         )
 
+        await callback.answer()
         await callback.message.answer_photo(
             photo=FSInputFile(product.photo_path),
             caption=caption,
@@ -131,12 +133,12 @@ class PriceChange(StatesGroup):
 
 @router.callback_query(F.data.startswith("price_change:"))
 async def process_price_change(callback: CallbackQuery, state: FSMContext):
-    parts = callback.data.split(":")
-
-    slug = parts[1]
-    product_id = int(parts[2])
-
     try:
+        parts = callback.data.split(":")
+
+        slug = parts[1]
+        product_id = int(parts[2])
+
         await state.update_data(
             slug=slug,
             product_id=product_id,
@@ -144,6 +146,7 @@ async def process_price_change(callback: CallbackQuery, state: FSMContext):
 
         await state.set_state(PriceChange.new_price)
 
+        await callback.answer()
         await callback.message.answer(text="Напишите новую цену:")
 
     except Exception as e:
@@ -183,6 +186,7 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
 
         await state.clear()
 
+        await callback.answer()
         await callback.message.answer(
             text="Успешное изменения цены!",
             reply_markup=get_options_for_changes(slug=data["slug"], product_id=data["product_id"]),
@@ -200,6 +204,7 @@ async def delete_price_change(callback: CallbackQuery, state: FSMContext):
 
     await state.clear()
 
+    await callback.answer()
     await callback.message.answer(
         text="Отмена изменения цены",
         reply_markup=get_options_for_changes(

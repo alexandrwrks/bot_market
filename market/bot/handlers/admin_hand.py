@@ -79,6 +79,7 @@ async def admin_orders_callback(callback: CallbackQuery):
     try:
         orders = await admin_service.get_admin_orders()
 
+        await callback.message.delete()
         for order in orders:
             text = (
                 f"НОМЕР ЗАКАЗА №{order.number}\n"
@@ -126,6 +127,8 @@ async def admin_statistics_callback(callback: CallbackQuery):
             )
 
         except TelegramBadRequest:
+            await callback.message.delete()
+
             await callback.message.answer(
                 text=text,
                 reply_markup=get_different_keyboard(),

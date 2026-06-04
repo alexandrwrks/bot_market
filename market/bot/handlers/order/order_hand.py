@@ -26,9 +26,7 @@ async def orders_btn(callback: CallbackQuery):
 
             await callback.message.answer(
                 text=text,
-                reply_markup=get_detail_keyboard(
-                    order.id
-                ),  # Кнопка подробнее что вывести что находится в заказе
+                reply_markup=get_detail_keyboard(order.id),
             )
 
         await callback.message.answer(
@@ -69,6 +67,7 @@ async def get_order_message(message: Message):
         )
 
     except (Exception, NotUserOrder):
+        await message.delete()
         await message.answer(
             text="У вас нет активных заказов",
             reply_markup=get_basket_and_catalog(),
@@ -77,9 +76,8 @@ async def get_order_message(message: Message):
 
 @router.callback_query(F.data.startswith("detail_order:"))
 async def process_detail_order(callback: CallbackQuery):
-    await callback.answer()
-    order_id = int(callback.data.split(":")[1])
     try:
+        order_id = int(callback.data.split(":")[1])
         order = await order_service.get_user_order_info(order_id=order_id)
 
         items_text = ""
@@ -96,6 +94,7 @@ async def process_detail_order(callback: CallbackQuery):
             f"Создание заказа: {order.created_at}\n"
             f"{items_text}"
         )
+        await callback.answer()
 
         await callback.message.answer(
             text=text,
