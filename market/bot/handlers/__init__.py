@@ -5,7 +5,8 @@ from market.bot.handlers.catalog_hand import router as categories_router
 from market.bot.handlers.order.order_confirm import router as order_confirm
 from market.bot.handlers.product_hand import router as product_router
 from market.bot.handlers.start_hand import router as start_router
-from market.bot.handlers.admin_routers import product_router as admin_product_router
+from market.bot.handlers.admin_routers import price_router as admin_product_router
+from market.bot.handlers.admin_routers import quantity_router
 
 routers = (
     start_router,
@@ -16,4 +17,5 @@ routers = (
     admin_router,
     order_confirm,
     admin_product_router,
+    quantity_router,
 )

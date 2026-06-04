@@ -129,3 +129,10 @@ class ProductRepo:
         )
 
         return result.scalar()
+
+    async def update_product_quantiy(self, product_id: int, new_quantity: int) -> None:
+        await self.session.execute(
+            update(Product)
+            .values(quantity=new_quantity)
+            .where(Product.id == product_id)
+        )

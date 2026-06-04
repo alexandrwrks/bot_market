@@ -113,4 +113,15 @@ class AdminService:
                     logger.exception(e)
                     raise
 
+    async def set_access_quantity(self, product_id: int, new_quantity: int) -> None:
+        async with SessionLocal() as session:
+            product_repo = ProductRepo(session)
+            async with session.begin():
+                try:
+                    await product_repo.update_product_quantiy(product_id=product_id, new_quantity=new_quantity)
+
+                except Exception as e:
+                    logger.exception(e)
+                    raise
+
 admin_service = AdminService()

@@ -66,3 +66,11 @@ def get_access_options():
     keyboard.button(text="Продолжить", callback_data="access_price_change")
 
     return keyboard.adjust(1).as_markup()
+
+def get_access_options_quantity():
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.button(text="Отменить", callback_data="delete_quantity_change")
+    keyboard.button(text="Продолжить", callback_data="access_quantity_change")
+
+    return keyboard.adjust(1).as_markup()
