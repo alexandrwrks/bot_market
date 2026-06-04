@@ -1,6 +1,8 @@
 from fastapi import APIRouter, status, Request
 
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
+
 from market.crm.config_template import templates
 from market.crm.service.dashboard import dashboard_service
 

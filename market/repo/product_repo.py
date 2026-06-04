@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, List
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from market.database.models import Product, Category
@@ -122,3 +122,10 @@ class ProductRepo:
             .values(price=new_price)
             .where(Product.id == product_id)
         )
+
+    async def get_count_of_all_products(self):
+        result = await self.session.execute(
+            select(func.sum(Product.quantity))
+        )
+
+        return result.scalar()

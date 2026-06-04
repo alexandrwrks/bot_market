@@ -1,7 +1,7 @@
 from market.crm.schemas import DashboardData
 from market.database.config import SessionLocal
 
-from market.repo import CRMRepo, OrderRepo
+from market.repo import CRMRepo, OrderRepo, ProductRepo
 from market.utils import logger
 
 

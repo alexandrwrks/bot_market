@@ -1,48 +1,235 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini CRM</title>
+
     <link rel="stylesheet" href="/static/dashboard.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
 
-        <div class="sidebar">
-            <h2>Dashboard</h2>
+<div class="layout">
 
-            <ul>
-                <li><h1><a href="{{ url_for('users_page') }}">Пользователи</a></h1></li>
-                <li><h1><a href="{{ url_for('products_page') }}">Товары</a></h1></li>
-                <li><h1>Настройки</h1></li>
-            </ul>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            Mini CRM
         </div>
 
-        <div class="content">
+        <nav>
+            <a href="#" class="nav-item active">🏠 Дашборд</a>
+            <a href="{{ url_for('users_page') }}" class="nav-item">👥 Клиенты</a>
+            <a href="#" class="nav-item">💼 Сделки</a>
+            <a href="#" class="nav-item">✅ Задачи</a>
+            <a href="#" class="nav-item">📅 Календарь</a>
+            <a href="#" class="nav-item">📞 Контакты</a>
+            <a href="#" class="nav-item">📊 Отчёты</a>
+            <a href="{{ url_for('products_page') }}" class="nav-item">📱 Товары</a>
+            <a href="#" class="nav-item">⚙️ Настройки</a>
+        </nav>
 
-            <div class="info-box">
-                <h2>Клиенты</h2>
-                <h1>{{ data.count_clients }}</h1>
-            </div>
+        <div class="profile">
+            <div class="avatar">A</div>
 
-            <div class="info-box">
-                <h2>Сделки</h2>
-                <h1>{{ data.count_deal }}</h1>
-            </div>
+            <div>
+                <div class="profile-name">
+                    Александр
+                </div>
 
-            <div class="info-box">
-                <h2>Задачи</h2>
-                <h1>{{ data.count_tasks }}</h1>
-            </div>
-
-            <div class="info-box">
-                <h2>Выручка</h2>
-                <h1>{{ data.count_revenue }} ₽</h1>
+                <div class="profile-role">
+                    Менеджер
+                </div>
             </div>
         </div>
-    </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+        <header class="header">
+            <h1>Дашборд</h1>
+
+            <input
+                    type="text"
+                    placeholder="Поиск клиента, сделки, задачи..."
+                    class="search"
+            >
+        </header>
+
+        <!-- Stats -->
+
+        <section class="stats">
+
+            <div class="stat-card">
+                <h3>Клиенты</h3>
+                <div class="value">{{ data.count_clients }}</div>
+                <span class="success">+12 за неделю</span>
+            </div>
+
+            <div class="stat-card">
+                <h3>Сделки</h3>
+                <div class="value">{{ data.count_deal }}</div>
+                <span class="success">+8 за неделю</span>
+            </div>
+
+            <div class="stat-card">
+                <h3>Задачи</h3>
+                <div class="value">{{ data.count_tasks }}</div>
+                <span class="success">+2 новых</span>
+            </div>
+
+            <div class="stat-card">
+                <h3>Доход</h3>
+                <div class="value">{{ data.count_revenue }} ₽</div>
+                <span class="success">+18%</span>
+            </div>
+
+        </section>
+
+        <!-- Middle -->
+
+        <section class="middle">
+
+            <div class="card chart-card">
+                <h2>Сделки по статусам</h2>
+
+                <canvas id="dealsChart"></canvas>
+            </div>
+
+            <div class="card">
+                <h2>Задачи на сегодня</h2>
+
+                <ul class="task-list">
+
+                    <li>
+                        <input type="checkbox">
+                        Позвонить клиенту
+                    </li>
+
+                    <li>
+                        <input type="checkbox">
+                        Отправить КП
+                    </li>
+
+                    <li>
+                        <input type="checkbox">
+                        Подготовить отчёт
+                    </li>
+
+                </ul>
+            </div>
+
+        </section>
+
+        <!-- Bottom -->
+
+        <section class="bottom">
+
+            <div class="card">
+
+                <div class="card-header">
+                    <h2>Последние клиенты</h2>
+                </div>
+
+                <table>
+
+                    <tr>
+                        <th>Имя</th>
+                        <th>Телефон</th>
+                        <th>Статус</th>
+                    </tr>
+
+                    <tr>
+                        <td>ООО ТехноПром</td>
+                        <td>+7 999 123-45-67</td>
+                        <td>
+                            <span class="badge green">
+                                Активный
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Иванов И.И.</td>
+                        <td>+7 999 222-33-44</td>
+                        <td>
+                            <span class="badge blue">
+                                Новый
+                            </span>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-header">
+                    <h2>Последние сделки</h2>
+                </div>
+
+                <table>
+
+                    <tr>
+                        <th>Сделка</th>
+                        <th>Сумма</th>
+                        <th>Статус</th>
+                    </tr>
+
+                    <tr>
+                        <td>CRM система</td>
+                        <td>350 000 ₽</td>
+                        <td>
+                            <span class="badge blue">
+                                В работе
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Разработка сайта</td>
+                        <td>120 000 ₽</td>
+                        <td>
+                            <span class="badge green">
+                                Успешно
+                            </span>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script>
+
+const ctx = document.getElementById('dealsChart');
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: [
+            'Новые',
+            'В работе',
+            'Ожидают',
+            'Успешные'
+        ],
+        datasets: [{
+            data: [12,15,8,6]
+        }]
+    }
+});
+
+</script>
 
 </body>
 </html>
-
-
