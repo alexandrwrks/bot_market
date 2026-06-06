@@ -24,7 +24,7 @@ async def cmd_start_message(message: Message):
     )
 
 
-@router.callback_query(F.data == "start_btn")
+@router.callback_query(F.data == "start")
 async def cmd_start_callback(callback: CallbackQuery):
     await callback.answer()
     keyboard = get_start_inline_keyboard()

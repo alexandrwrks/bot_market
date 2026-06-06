@@ -16,16 +16,18 @@ router = Router()
 
 from aiogram.fsm.state import State, StatesGroup
 
+
 class QuantityChange(StatesGroup):
     new_quantity = State()
 
-@router.callback_query(F.data.startswith("quantity_change:"))
+
+@router.callback_query(F.data.startswith("admin_panel:change:quantity:"))
 async def process_price_change(callback: CallbackQuery, state: FSMContext):
     try:
         parts = callback.data.split(":")
 
-        slug = parts[1]
-        product_id = int(parts[2])
+        slug = parts[-2]
+        product_id = int(parts[-1])
 
         await state.update_data(
             slug=slug,
@@ -41,6 +43,7 @@ async def process_price_change(callback: CallbackQuery, state: FSMContext):
             text="Ошибка изменения количества. Попробуйте позже.",
             show_alert=True,
         )
+
 
 @router.message(QuantityChange.new_quantity)
 async def process_new_price(message: Message, state: FSMContext):
@@ -58,10 +61,11 @@ async def process_new_price(message: Message, state: FSMContext):
 
     await message.answer(
         text=f"Количество товара: {new_quantity}",
-        reply_markup=get_access_options_quantity()
+        reply_markup=get_access_options_quantity(),
     )
 
-@router.callback_query(F.data == "access_quantity_change")
+
+@router.callback_query(F.data == "change:access_quantity")
 async def access_price_change(callback: CallbackQuery, state: FSMContext):
     try:
         data = await state.get_data()
@@ -75,12 +79,14 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
 
         await callback.message.answer("Успешное изменения количества!")
 
-        product = await product_service.get_product_information(product_id=data["product_id"])
+        product = await product_service.get_product_information(
+            product_id=data["product_id"]
+        )
 
         caption = (
             f"{product.name}\n\n"
-            f"Описание: {product.description}\n\n"
-            f"Цена: {product.price} руб.\n"
+            f"{product.description}\n\n"
+            f"💰 Стоимость: {product.price} RUB за 1 шт.\n"
             f"В наличии: {product.quantity} шт."
         )
 
@@ -88,7 +94,9 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer_photo(
             photo=FSInputFile(product.photo_path),
             caption=caption,
-            reply_markup=get_options_for_changes(slug=data["slug"], product_id=data["product_id"]),
+            reply_markup=get_options_for_changes(
+                slug=data["slug"], product_id=data["product_id"]
+            ),
         )
 
     except NotFoundProductError:
@@ -103,7 +111,8 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
             show_alert=True,
         )
 
-@router.callback_query(F.data == "delete_quantity_change")
+
+@router.callback_query(F.data == "change:delete_quantity")
 async def delete_price_change(callback: CallbackQuery, state: FSMContext):
     try:
         data = await state.get_data()
@@ -111,12 +120,14 @@ async def delete_price_change(callback: CallbackQuery, state: FSMContext):
 
         await callback.message.answer(text="Отмена изменения количества")
 
-        product = await product_service.get_product_information(product_id=data["product_id"])
+        product = await product_service.get_product_information(
+            product_id=data["product_id"]
+        )
 
         caption = (
             f"{product.name}\n\n"
-            f"Описание: {product.description}\n\n"
-            f"Цена: {product.price} руб.\n"
+            f"{product.description}\n\n"
+            f"💰 Стоимость: {product.price} RUB за 1 шт.\n"
             f"В наличии: {product.quantity} шт."
         )
 
@@ -124,10 +135,13 @@ async def delete_price_change(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer_photo(
             photo=FSInputFile(product.photo_path),
             caption=caption,
-            reply_markup=get_options_for_changes(slug=data["slug"], product_id=data["product_id"]),
+            reply_markup=get_options_for_changes(
+                slug=data["slug"], product_id=data["product_id"]
+            ),
         )
 
     except (Exception, NotFoundProductError):
+        await callback.answer()
         await callback.message.answer(
             text="Панель администратора",
             reply_markup=get_admin_inline_keyboard(),

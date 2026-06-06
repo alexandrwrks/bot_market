@@ -118,10 +118,13 @@ class AdminService:
             product_repo = ProductRepo(session)
             async with session.begin():
                 try:
-                    await product_repo.update_product_quantiy(product_id=product_id, new_quantity=new_quantity)
+                    await product_repo.update_product_quantiy(
+                        product_id=product_id, new_quantity=new_quantity
+                    )
 
                 except Exception as e:
                     logger.exception(e)
                     raise
+
 
 admin_service = AdminService()

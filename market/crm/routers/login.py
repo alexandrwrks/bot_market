@@ -7,7 +7,7 @@ from market.crm.exceptions.login import EmailError, PasswordError
 router = APIRouter()
 
 
-@router.post("/login")
+@router.post("/login/")
 async def register(user: LoginUser):
     try:
         await login_service.login_user(user)

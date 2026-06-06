@@ -10,7 +10,7 @@ from market.bot.exception.basket_ex import (
 )
 from market.bot.exception.product_ex import NotFoundProductError
 from market.bot.exception.user_ex import NotFoundUserError
-from market.repo import BasketRepo
+from market.repo import BasketRepo, basket_repo
 from market.repo.product_repo import ProductRepo
 
 
@@ -59,8 +59,6 @@ class BasketService:
                     product_repo = ProductRepo(session)
 
                     basket = await basket_repo.get_or_create_active_basket(telegram_id)
-                    # if basket_id is None:
-                    #     raise NotFoundUserError()
 
                     product = await product_repo.get_product_by_id(product_id)
                     if product is None:
@@ -182,6 +180,38 @@ class BasketService:
             except Exception:
                 logger.exception("Ошибка рендера корзины пользователя=%s", telegram_id)
                 return [], 0
+
+    async def get_basket_position(self, telegram_id: int):
+        async with SessionLocal() as session:
+            try:
+                basket_repo = BasketRepo(session)
+
+                products = await basket_repo.get_products_in_basket(
+                    telegram_id=telegram_id
+                )
+
+                return products
+
+            except Exception as e:
+                logger.exception(e)
+                raise
+
+    async def get_total_price_for_product_in_basket(
+        self, telegram_id: int, product_id: int
+    ):
+        async with SessionLocal() as session:
+            basket_repo = BasketRepo(session)
+            try:
+                quantity = await basket_repo.get_product_quantity_in_active_basket(
+                    telegram_id=telegram_id, product_id=product_id
+                )
+                total_price = await basket_repo.get_total_price_by_product_id(
+                    telegram_id=telegram_id, product_id=product_id
+                )
+
+            except Exception as e:
+                logger.exception(e)
+                raise
 
 
 basket_service = BasketService()

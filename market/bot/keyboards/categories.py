@@ -7,10 +7,10 @@ def get_exists_catalog(existing_categories):
 
     # С помощью цикла создаем клавиатуру категорий
     for category in existing_categories:
-        keyboard.button(text=category.name, callback_data=f"category:{category.slug}")
+        keyboard.button(text=category.name, callback_data=f"menu:catalog:category:{category.slug}")
 
     # Кнопка назад -> Стартовая точка
-    keyboard.button(text="🔙 Назад", callback_data="start_btn")
+    keyboard.button(text="🔙 Назад", callback_data="start")
 
     # Возращаем клавиатуру
     return keyboard.adjust(1).as_markup()

@@ -30,7 +30,7 @@ get product info bu product_id
 """
 
 
-@router.callback_query(F.data == "admin_update_products")
+@router.callback_query(F.data == "admin_panel:products:update")
 async def admin_update_products_callback(callback: CallbackQuery):
     """
     Выбор продукта как у пользователя,
@@ -42,18 +42,20 @@ async def admin_update_products_callback(callback: CallbackQuery):
     """
     try:
         categories = await category_service.get_categories()
+        keyboard = get_exists_catalog_for_admin(categories)
 
+        await callback.answer()
         try:
             await callback.message.edit_text(
                 text="Выберите категорию:",
-                reply_markup=get_exists_catalog_for_admin(categories),
+                reply_markup=keyboard,
             )
 
         except TelegramBadRequest:
             await callback.message.delete()
             await callback.message.answer(
                 text="Выберите категорию:",
-                reply_markup=get_exists_catalog_for_admin(categories),
+                reply_markup=keyboard,
             )
 
     except Exception:
@@ -63,46 +65,49 @@ async def admin_update_products_callback(callback: CallbackQuery):
         )
 
 
-@router.callback_query(F.data.startswith("admin_category:"))
+@router.callback_query(F.data.startswith("admin_panel:catalog:category:"))
 async def process_admin_category(callback: CallbackQuery):
-    slug = callback.data.split(":")[1]
     try:
-        products = await product_service.get_products_by_category(slug=slug)
+        slug = callback.data.split(":")[-1]
 
+        products = await product_service.get_products_by_category(slug=slug)
+        keyboard = get_admin_products_keyboard(products, slug)
+
+        await callback.answer()
         try:
             await callback.message.edit_text(
                 text="Выберите товар:",
-                reply_markup=get_admin_products_keyboard(products, slug),
+                reply_markup=keyboard,
             )
 
         except TelegramBadRequest:
             await callback.message.delete()
             await callback.message.answer(
                 text="Выберите товар:",
-                reply_markup=get_admin_products_keyboard(products, slug),
+                reply_markup=keyboard,
             )
 
     except Exception:
         await callback.answer(
-            text=f"Ошибка выдачи товаров по категории",
+            text=f"Ошибка выдачи товара по категории {slug}",
             show_alert=True,
         )
 
 
-@router.callback_query(F.data.startswith("admin_product:"))
+@router.callback_query(F.data.startswith("admin_panel:catalog:products:"))
 async def process_admin_product(callback: CallbackQuery):
     try:
         parts = callback.data.split(":")
 
-        slug = parts[1]
-        product_id = int(parts[2])
+        slug = parts[3]
+        product_id = int(parts[4])
 
         product = await product_service.get_product_information(product_id=product_id)
 
         caption = (
             f"{product.name}\n\n"
-            f"Описание: {product.description}\n\n"
-            f"Цена: {product.price} руб.\n"
+            f"{product.description}\n\n"
+            f"💰 Стоимость: {product.price} RUB за 1 шт.\n"
             f"В наличии: {product.quantity} шт."
         )
 
@@ -128,16 +133,18 @@ async def process_admin_product(callback: CallbackQuery):
 
 from aiogram.fsm.state import State, StatesGroup
 
+
 class PriceChange(StatesGroup):
     new_price = State()
 
-@router.callback_query(F.data.startswith("price_change:"))
+
+@router.callback_query(F.data.startswith("admin_panel:change:price"))
 async def process_price_change(callback: CallbackQuery, state: FSMContext):
     try:
         parts = callback.data.split(":")
 
-        slug = parts[1]
-        product_id = int(parts[2])
+        slug = parts[-2]
+        product_id = int(parts[-1])
 
         await state.update_data(
             slug=slug,
@@ -155,6 +162,7 @@ async def process_price_change(callback: CallbackQuery, state: FSMContext):
             show_alert=True,
         )
 
+
 @router.message(PriceChange.new_price)
 async def process_new_price(message: Message, state: FSMContext):
     try:
@@ -170,11 +178,11 @@ async def process_new_price(message: Message, state: FSMContext):
     await state.update_data(new_price=new_price)
 
     await message.answer(
-        text=f"Новая цена товара: {new_price}",
-        reply_markup=get_access_options()
+        text=f"Новая цена товара: {new_price}", reply_markup=get_access_options()
     )
 
-@router.callback_query(F.data == "access_price_change")
+
+@router.callback_query(F.data == "change:access_price")
 async def access_price_change(callback: CallbackQuery, state: FSMContext):
     try:
         data = await state.get_data()
@@ -187,9 +195,26 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
         await state.clear()
 
         await callback.answer()
-        await callback.message.answer(
-            text="Успешное изменения цены!",
-            reply_markup=get_options_for_changes(slug=data["slug"], product_id=data["product_id"]),
+
+        await callback.message.answer("Успешное обновление цены")
+
+        product = await product_service.get_product_information(
+            product_id=data["product_id"]
+        )
+
+        caption = (
+            f"{product.name}\n\n"
+            f"{product.description}\n\n"
+            f"💰 Стоимость: {product.price} RUB за 1 шт.\n"
+            f"В наличии: {product.quantity} шт."
+        )
+
+        await callback.answer()
+        await callback.message.answer_photo(
+            photo=FSInputFile(product.photo_path),
+            caption=caption,
+            reply_markup=get_options_for_changes(
+                slug=data["product_id"], product_id=data["product_id"]),
         )
 
     except Exception:
@@ -198,7 +223,8 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
             show_alert=True,
         )
 
-@router.callback_query(F.data == "delete_price_change")
+
+@router.callback_query(F.data == "change:delete_price")
 async def delete_price_change(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
 
@@ -208,6 +234,7 @@ async def delete_price_change(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(
         text="Отмена изменения цены",
         reply_markup=get_options_for_changes(
-            slug=data["slug"], product_id=data["product_id"],
-        )
+            slug=data["slug"],
+            product_id=data["product_id"],
+        ),
     )

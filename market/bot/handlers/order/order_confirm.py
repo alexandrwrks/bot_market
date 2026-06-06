@@ -42,7 +42,7 @@ class PhoneValidator(BaseModel):
             raise ValidationError("Неверный номер телефона")
 
 
-@router.callback_query(F.data == "confirm_order_btn")
+@router.callback_query(F.data == "order:confirm")
 async def confirm_order(callback: CallbackQuery, state: FSMContext):
     try:
         await order_service.check_user_basket_for_order(callback.from_user.id)
@@ -108,7 +108,7 @@ async def process_email(message: Message, state: FSMContext):
         )
 
 
-@router.callback_query(F.data == "done_btn")
+@router.callback_query(F.data == "order:done")
 async def create_order(callback: CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
 
@@ -137,7 +137,7 @@ async def create_order(callback: CallbackQuery, state: FSMContext):
         )
 
 
-@router.callback_query(F.data == "changes_btn")
+@router.callback_query(F.data == "order:changes")
 async def change_data_for_order(callback: CallbackQuery):
     await callback.answer()
 

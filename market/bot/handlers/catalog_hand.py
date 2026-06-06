@@ -10,24 +10,21 @@ from market.bot.service.category_service import category_service
 router = Router()
 
 
-@router.callback_query(F.data == "catalog_btn")
+@router.callback_query(F.data == "menu:catalog")
 async def get_categories_of_catalog(callback: CallbackQuery):
     try:
         categories = await category_service.get_categories()
 
         keyboard = get_exists_catalog(categories)
 
-
+        await callback.answer()
         try:
-            await callback.answer()
             await callback.message.edit_text(
                 text="Выберите категорию:",
                 reply_markup=keyboard,
             )
 
         except TelegramBadRequest:
-            await callback.answer()
-            
             await callback.message.delete()
             await callback.message.answer(
                 text="Выберите категорию:",

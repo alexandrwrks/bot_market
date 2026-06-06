@@ -118,15 +118,11 @@ class ProductRepo:
 
     async def update_product_price(self, product_id: int, new_price: int) -> None:
         await self.session.execute(
-            update(Product)
-            .values(price=new_price)
-            .where(Product.id == product_id)
+            update(Product).values(price=new_price).where(Product.id == product_id)
         )
 
     async def get_count_of_all_products(self):
-        result = await self.session.execute(
-            select(func.sum(Product.quantity))
-        )
+        result = await self.session.execute(select(func.sum(Product.quantity)))
 
         return result.scalar()
 

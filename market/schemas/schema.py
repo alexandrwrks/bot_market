@@ -24,3 +24,9 @@ class OrderInfo(BaseModel):
     status: str
     created_at: str
     items: list[OrderInfoItem]
+
+
+class ProductsInBasket(BaseModel):
+    product_id: int
+    name: str
+    quantity: int

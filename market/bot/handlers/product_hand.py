@@ -25,14 +25,14 @@ class AddToCartState(StatesGroup):
     waiting_quantity = State()
 
 
-@router.callback_query(F.data.startswith("category:"))
+@router.callback_query(F.data.startswith("menu:catalog:category:"))
 async def get_products_by_categories(callback: CallbackQuery):
     """
     Показываем товары выбранной категории
     """
     await callback.answer()
 
-    slug = callback.data.split(":")[1]
+    slug = callback.data.split(":")[-1]
 
     try:
         products = await product_service.get_products_by_category(slug=slug)
@@ -67,8 +67,8 @@ async def get_information_about_product(callback: CallbackQuery, state: FSMConte
 
         caption = (
             f"{product.name}\n\n"
-            f"Описание: {product.description}\n\n"
-            f"Цена: {product.price} руб.\n"
+            f"{product.description}\n\n"
+            f"💰 Стоимость: {product.price} RUB за 1 шт.\n"
             f"В наличии: {product.quantity} шт."
         )
 
@@ -103,34 +103,34 @@ async def get_information_about_product(callback: CallbackQuery, state: FSMConte
 """
 
 
-@router.callback_query(F.data.startswith("add_to_cart:"))
+@router.callback_query(F.data.startswith("basket:add:"))
 async def add_product_to_basket(callback: CallbackQuery, state: FSMContext):
     try:
-        product_id = int(callback.data.split(":")[1])
+        product_id = int(callback.data.split(":")[-1])
         telegram_id = callback.from_user.id
 
-        await callback.answer()
         product_info = await basket_service.get_product_for_cart_input(
             telegram_id=telegram_id, product_id=product_id
         )
 
+        await state.update_data(
+            product_id=product_id,
+            available=product_info.available,
+        )
+        await state.set_state(AddToCartState.waiting_quantity)
+
+        await callback.answer()
+        await callback.message.answer(
+            f"Введите количество для '{product_info.name}' (1..{product_info.available})",
+        )
+
     except NotFoundProductError:
-        await callback.message.answer("Этот товар закончился")
+        await callback.answer("Этот товар закончился")
         return
 
     except NotEnoughProductQuantityError:
-        await callback.message.answer("Этот товар закончился")
+        await callback.answer("Этот товар закончился")
         return
-
-    await state.update_data(
-        product_id=product_id,
-        available=product_info.available,
-    )
-    await state.set_state(AddToCartState.waiting_quantity)
-
-    await callback.message.answer(
-        f"Введите количество для '{product_info.name}' (1..{product_info.available})",
-    )
 
 
 @router.message(AddToCartState.waiting_quantity)

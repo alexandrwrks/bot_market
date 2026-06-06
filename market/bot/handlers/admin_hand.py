@@ -15,8 +15,10 @@ from market.bot.service.user_service import user_service
 
 router = Router()
 
-WELCOME_MESSAGE = "Панель администратора\nВыберите действие:"
-
+WELCOME_MESSAGE = (
+        "Панель администратора\n"
+        "Выберите действие:"
+)
 
 @router.message(Command("admin"))
 async def admin_command(message: Message):
@@ -46,15 +48,15 @@ async def admin_command(message: Message):
         )
 
 
-@router.callback_query(F.data == "back_to_admin")
-async def back_to_admin(callback: CallbackQuery):
+@router.callback_query(F.data == "admin_panel:menu")
+async def admin_panel_menu(callback: CallbackQuery):
     await callback.answer()
     await callback.message.edit_text(
         text=WELCOME_MESSAGE, reply_markup=get_admin_inline_keyboard()
     )
 
 
-@router.callback_query(F.data == "admin_products")
+@router.callback_query(F.data == "admin_panel:products:add")
 async def admin_products_callback(callback: CallbackQuery):
     """
     Добавить FSM для добавления товара:
@@ -69,7 +71,7 @@ async def admin_products_callback(callback: CallbackQuery):
     )
 
 
-@router.callback_query(F.data == "admin_orders")
+@router.callback_query(F.data == "admin_admin:orders:view")
 async def admin_orders_callback(callback: CallbackQuery):
     await callback.answer()
     """
@@ -103,7 +105,7 @@ async def admin_orders_callback(callback: CallbackQuery):
         )
 
 
-@router.callback_query(F.data == "admin_statistics")
+@router.callback_query(F.data == "admin_admin:statistics:view")
 async def admin_statistics_callback(callback: CallbackQuery):
     await callback.answer()
     """
@@ -113,6 +115,7 @@ async def admin_statistics_callback(callback: CallbackQuery):
     """
     try:
         admin_info = await admin_service.get_admin_info()
+        keyboard = get_different_keyboard()
 
         text = (
             f"\tСтатистика:\n"
@@ -123,7 +126,7 @@ async def admin_statistics_callback(callback: CallbackQuery):
         try:
             await callback.message.edit_text(
                 text=text,
-                reply_markup=get_different_keyboard(),
+                reply_markup=keyboard
             )
 
         except TelegramBadRequest:
@@ -131,7 +134,7 @@ async def admin_statistics_callback(callback: CallbackQuery):
 
             await callback.message.answer(
                 text=text,
-                reply_markup=get_different_keyboard(),
+                reply_markup=keyboard
             )
 
     except Exception:

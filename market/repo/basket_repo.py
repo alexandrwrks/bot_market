@@ -1,6 +1,8 @@
 from sqlalchemy import delete, func, select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import List
+from market.schemas.schema import ProductsInBasket
 from market.database.models import Basket, BasketItem, Product
 
 
@@ -169,3 +171,39 @@ class BasketRepo:
 
         total_price = result.scalar_one()
         return int(total_price)
+
+    async def get_products_in_basket(self, telegram_id: int) -> List[ProductsInBasket]:
+        result = await self.session.execute(
+            select(
+                Product.id,
+                Product.name,
+                BasketItem.quantity,
+            )
+            .join(BasketItem, BasketItem.product_id == Product.id)
+            .join(Basket, Basket.id == BasketItem.basket_id)
+            .where(Basket.telegram_id == telegram_id)
+        )
+
+        return [
+            ProductsInBasket(
+                product_id=product.id,
+                name=product.name,
+                quantity=product.quantity,
+            )
+            for product in result.all()
+        ]
+
+    async def get_total_price_by_product_id(
+        self, telegram_id: int, product_id: int
+    ) -> int:
+        result = await self.session.execute(
+            select(BasketItem.quantity * BasketItem.price_at_time)
+            .join(Basket)
+            .where(
+                Basket.telegram_id == telegram_id,
+                BasketItem.product_id == product_id,
+            )
+        )
+
+        total_price = result.scalar_one_or_none()
+        return total_price or 0

@@ -9,12 +9,10 @@ from market.bot.service.order_service import order_service
 router = Router()
 
 
-@router.callback_query(F.data == "orders_btn")
+@router.callback_query(F.data == "menu:orders")
 async def orders_btn(callback: CallbackQuery):
     try:
         orders = await order_service.get_user_orders(callback.from_user.id)
-
-        await callback.answer()
 
         for order in orders:
             text = (
@@ -29,6 +27,7 @@ async def orders_btn(callback: CallbackQuery):
                 reply_markup=get_detail_keyboard(order.id),
             )
 
+        await callback.answer()
         await callback.message.answer(
             text="Выберите действие:",
             reply_markup=get_basket_and_catalog(),
@@ -74,10 +73,10 @@ async def get_order_message(message: Message):
         )
 
 
-@router.callback_query(F.data.startswith("detail_order:"))
+@router.callback_query(F.data.startswith("order:detail:"))
 async def process_detail_order(callback: CallbackQuery):
     try:
-        order_id = int(callback.data.split(":")[1])
+        order_id = int(callback.data.split(":")[-1])
         order = await order_service.get_user_order_info(order_id=order_id)
 
         items_text = ""
@@ -94,8 +93,8 @@ async def process_detail_order(callback: CallbackQuery):
             f"Создание заказа: {order.created_at}\n"
             f"{items_text}"
         )
-        await callback.answer()
 
+        await callback.answer()
         await callback.message.answer(
             text=text,
             reply_markup=get_basket_and_catalog(),
