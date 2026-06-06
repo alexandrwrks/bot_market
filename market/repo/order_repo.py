@@ -1,6 +1,5 @@
-from sqlalchemy import select, insert, func
+from sqlalchemy import func, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.functions import coalesce
 
 from market.database.models import Order, OrderItem, Product
 

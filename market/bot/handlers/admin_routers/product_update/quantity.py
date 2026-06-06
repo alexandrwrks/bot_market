@@ -1,25 +1,16 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message, FSInputFile
+from aiogram.types import CallbackQuery, FSInputFile, Message
 
 from market.bot.exception.product_ex import NotFoundProductError
+from market.bot.fsm.fsms import QuantityChange
 from market.bot.keyboards.admin_keyboards.product_update import (
-    get_options_for_changes,
-    get_access_options_quantity,
-)
+    get_access_options_quantity, get_options_for_changes)
 from market.bot.keyboards.admin_keyboars import get_admin_inline_keyboard
 from market.bot.service.admin_service import admin_service
 from market.bot.service.product_service import product_service
 
 router = Router()
-
-
-from aiogram.fsm.state import State, StatesGroup
-
-
-class QuantityChange(StatesGroup):
-    new_quantity = State()
-
 
 @router.callback_query(F.data.startswith("admin_panel:change:quantity:"))
 async def process_price_change(callback: CallbackQuery, state: FSMContext):
@@ -38,7 +29,7 @@ async def process_price_change(callback: CallbackQuery, state: FSMContext):
         await callback.answer()
         await callback.message.answer(text="Напишите новое количество:")
 
-    except Exception as e:
+    except Exception:
         await callback.answer(
             text="Ошибка изменения количества. Попробуйте позже.",
             show_alert=True,

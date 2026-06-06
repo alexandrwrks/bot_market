@@ -1,9 +1,10 @@
-from sqlalchemy import delete, func, select, insert
+from typing import List
+
+from sqlalchemy import delete, func, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import List
-from market.schemas.schema import ProductsInBasket
 from market.database.models import Basket, BasketItem, Product
+from market.schemas.schema import ProductsInBasket
 
 
 class BasketRepo:

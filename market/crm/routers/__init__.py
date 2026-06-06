@@ -1,8 +1,8 @@
-from .login import router as login_router
-from .users import router as user_router
-from .orders import router as order_router
 from .dashboards import router as dashboard_router
+from .login import router as login_router
+from .orders import router as order_router
 from .products import router as product_router
+from .users import router as user_router
 
 handlers = (
     login_router,

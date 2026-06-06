@@ -1,5 +1,6 @@
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from typing import List
+
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from market.schemas.schema import ProductsInBasket
 

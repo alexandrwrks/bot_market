@@ -1,9 +1,9 @@
 import uvicorn
 from fastapi import FastAPI
-from market.database import init_db
+from fastapi.staticfiles import StaticFiles
 
 from market.crm.routers import handlers
-from fastapi.staticfiles import StaticFiles
+from market.database import init_db
 
 
 async def lifespan(app: FastAPI):

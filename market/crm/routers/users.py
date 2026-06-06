@@ -1,9 +1,8 @@
-from fastapi import APIRouter, status, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 
 from market.bot.service.user_service import user_service
 from market.crm.config_template import templates
-
 
 router = APIRouter(prefix="/users", tags=["users"])
 

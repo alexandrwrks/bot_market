@@ -34,8 +34,8 @@ class CategoryRepo:
             select(Category)
             .join(Product, Product.category_id == Category.id)
             .where(
-                Category.is_active == True,
-                Product.is_active == True,
+                Category.is_active.is_(True),
+                Product.is_active.is_(True),
                 Product.quantity > 0,
             )
             .distinct()

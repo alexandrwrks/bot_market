@@ -1,10 +1,9 @@
-from sqlalchemy import select, insert, func
+from sqlalchemy import func, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from market.crm.schemas.login import LoginUser
-
-from market.database.models import User
 from market.database.config import SessionLocal
+from market.database.models import User
 
 
 class CRMRepo:

@@ -1,16 +1,14 @@
 from enum import Enum
+from typing import List
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError
-
-from typing import List
-from market.bot.exception.admin_ex import AdminInfoError
-from market.database.config import SessionLocal
-from market.repo import UserRepo, OrderRepo, ProductRepo
-from market.utils.config import settings
-from market.utils import logger
-
 from pydantic import BaseModel
+
+from market.database.config import SessionLocal
+from market.repo import OrderRepo, ProductRepo, UserRepo
+from market.utils import logger
+from market.utils.config import settings
 
 
 class AdminNotificationService:
@@ -60,71 +58,90 @@ class AdminOrders(BaseModel):
 
 class AdminService:
     async def get_admin_info(self) -> AdminInfo:
-        async with SessionLocal() as session:
-            user_repo = UserRepo(session)
-            order_repo = OrderRepo(session)
-            try:
+        try:
+            async with SessionLocal() as session:
+                user_repo = UserRepo(session)
+                order_repo = OrderRepo(session)
+
                 users = await user_repo.get_count_users()
                 orders = await order_repo.get_count_of_orders()
 
+                logger.info("Successful delivery of admin information")
                 return AdminInfo(
                     users=users,
                     orders=orders,
                 )
 
-            except Exception as e:
-                logger.exception(e)
-                raise
+        except Exception:
+            logger.exception("Failed to get admin information")
+            raise
 
     async def get_admin_orders(self) -> List[AdminOrders]:
-        async with SessionLocal() as session:
-            order_repo = OrderRepo(session)
-            try:
+        try:
+            async with SessionLocal() as session:
+                order_repo = OrderRepo(session)
+
                 orders = await order_repo.get_active_users_orders()
 
-                lst_orders = []
-                for order in orders:
-                    lst_orders.append(
-                        AdminOrders(
-                            number=order.id,  # номер телефона
-                            name=order.name,  # имя пользователя
-                            phone=order.phone,  # номер телефона
-                            total_price=order.total_price,  # стоимость заказа
-                            status=Status(order.status),  # статус заказа
-                        )
+                logger.info("Successful delivery of orders")
+                return [
+                    AdminOrders(
+                        number=order.id,  # номер телефона
+                        name=order.name,  # имя пользователя
+                        phone=order.phone,  # номер телефона
+                        total_price=order.total_price,  # стоимость заказа
+                        status=Status(order.status),  # статус заказа
                     )
+                    for order in orders
+                ]
 
-                return lst_orders
-
-            except Exception as e:
-                logger.exception(e)
-                raise
+        except Exception:
+            logger.exception("Failed to get admin orders")
+            raise
 
     async def set_access_price(self, product_id: int, new_price: int) -> None:
-        async with SessionLocal() as session:
-            product_repo = ProductRepo(session)
-            async with session.begin():
-                try:
+        try:
+            async with SessionLocal() as session:
+                product_repo = ProductRepo(session)
+                async with session.begin():
                     await product_repo.update_product_price(
                         product_id=product_id, new_price=new_price
                     )
+                    logger.info(
+                        "Updated product price: product_id=%s, new_price=%s",
+                        product_id,
+                        new_price,
+                    )
 
-                except Exception as e:
-                    logger.exception(e)
-                    raise
+        except Exception:
+            logger.exception(
+                "Failed to update product price: product_id=%s, new_price=%s",
+                product_id,
+                new_price,
+            )
+            raise
 
     async def set_access_quantity(self, product_id: int, new_quantity: int) -> None:
-        async with SessionLocal() as session:
-            product_repo = ProductRepo(session)
-            async with session.begin():
-                try:
+        try:
+            async with SessionLocal() as session:
+                product_repo = ProductRepo(session)
+                async with session.begin():
                     await product_repo.update_product_quantiy(
                         product_id=product_id, new_quantity=new_quantity
                     )
+                    logger.info(
+                        "Updated product quantity: product_id=%s, new_quantity=%s",
+                        product_id,
+                        new_quantity,
+                    )
 
-                except Exception as e:
-                    logger.exception(e)
-                    raise
+        except Exception:
+            logger.exception(
+                "Failed to update product quantity: product_id=%s, new_quantity=%s",
+                product_id,
+                new_quantity,
+            )
+            raise
 
 
 admin_service = AdminService()

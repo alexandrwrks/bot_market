@@ -1,16 +1,16 @@
+from typing import List
+
+from market.bot.exception.product_ex import (NoProductsInCategoryError,
+                                             NotEnoughProductQuantityError,
+                                             NotFoundProductError)
 from market.database.config import SessionLocal
 from market.database.models import Product
-from market.utils import logger
-from market.bot.exception.product_ex import (
-    NotFoundProductError,
-    NotEnoughProductQuantityError,
-    NoProductsInCategoryError,
-)
 from market.repo.product_repo import ProductRepo
+from market.utils import logger
 
 
 class ProductService:
-    async def get_products_by_category(self, slug: str):
+    async def get_products_by_category(self, slug: str) -> List[Product]:
         """
         router -> category:
         Показываем все доступные товары по выбранной категории
@@ -26,12 +26,11 @@ class ProductService:
 
             return products
 
-    async def get_information_about_product(self, product_id: int):
-        async with SessionLocal() as session:
-            product_repo = ProductRepo(session)
-
-            async with session.begin():
-                try:
+    async def get_information_about_product(self, product_id: int) -> Product:
+        try:
+            async with SessionLocal() as session:
+                product_repo = ProductRepo(session)
+                async with session.begin():
                     product = await product_repo.get_product_by_id(product_id)
 
                     if product is None:
@@ -44,25 +43,24 @@ class ProductService:
 
                     return product
 
-                except Exception:
-                    logger.exception(
-                        "Не удалось достать информацию о товаре=%s", product_id
-                    )
-                    raise NotFoundProductError()
+        except Exception:
+            logger.exception("Не удалось достать информацию о товаре=%s", product_id)
+            raise NotFoundProductError()
 
     async def get_product_information(self, product_id: int) -> Product:
-        async with SessionLocal() as session:
-            product_repo = ProductRepo(session)
-            try:
+        try:
+            async with SessionLocal() as session:
+                product_repo = ProductRepo(session)
+
                 product = await product_repo.get_product_by_product_id(product_id)
                 if not product:
                     raise NotFoundProductError()
 
                 return product
 
-            except Exception as e:
-                logger.exception(e)
-                raise
+        except Exception as e:
+            logger.exception(e)
+            raise
 
 
 product_service = ProductService()

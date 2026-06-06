@@ -1,5 +1,5 @@
 from aiogram.types import User as TgUser
-from sqlalchemy import select, update, insert, func
+from sqlalchemy import func, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from market.database.models import User

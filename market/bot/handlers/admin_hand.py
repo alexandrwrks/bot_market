@@ -1,24 +1,20 @@
 from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
-from aiogram.types import Message, CallbackQuery
-from market.bot.exception.user_ex import UserAdminLicense, NotFoundUserError
-from market.bot.keyboards.admin_keyboars import (
-    get_back_admin_keyboard,
-    get_admin_inline_keyboard,
-    get_different_keyboard,
-)
+from aiogram.types import CallbackQuery, Message
 
+from market.bot.exception.user_ex import NotFoundUserError, UserAdminLicense
+from market.bot.keyboards.admin_keyboars import (get_admin_inline_keyboard,
+                                                 get_back_admin_keyboard,
+                                                 get_different_keyboard)
 from market.bot.keyboards.start import get_start_inline_keyboard
 from market.bot.service.admin_service import admin_service
 from market.bot.service.user_service import user_service
 
 router = Router()
 
-WELCOME_MESSAGE = (
-        "Панель администратора\n"
-        "Выберите действие:"
-)
+WELCOME_MESSAGE = "Панель администратора\nВыберите действие:"
+
 
 @router.message(Command("admin"))
 async def admin_command(message: Message):
@@ -124,18 +120,12 @@ async def admin_statistics_callback(callback: CallbackQuery):
         )
 
         try:
-            await callback.message.edit_text(
-                text=text,
-                reply_markup=keyboard
-            )
+            await callback.message.edit_text(text=text, reply_markup=keyboard)
 
         except TelegramBadRequest:
             await callback.message.delete()
 
-            await callback.message.answer(
-                text=text,
-                reply_markup=keyboard
-            )
+            await callback.message.answer(text=text, reply_markup=keyboard)
 
     except Exception:
         await callback.answer(

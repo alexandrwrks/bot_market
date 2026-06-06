@@ -3,7 +3,8 @@ from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 
 from market.bot.exception.order_ex import NotUserOrder
-from market.bot.keyboards.orders import get_basket_and_catalog, get_detail_keyboard
+from market.bot.keyboards.orders import (get_basket_and_catalog,
+                                         get_detail_keyboard)
 from market.bot.service.order_service import order_service
 
 router = Router()

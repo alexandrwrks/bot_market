@@ -4,17 +4,12 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, FSInputFile, Message
 
-from market.bot.exception.basket_ex import AddProductToBasketError
-from market.bot.exception.product_ex import (
-    NotFoundProductError,
-    NotEnoughProductQuantityError,
-    NoProductsInCategoryError,
-)
-from market.bot.keyboards.product import (
-    products_keyboard,
-    get_product_keyboard,
-    get_product_keyboard_before,
-)
+from market.bot.exception.product_ex import (NoProductsInCategoryError,
+                                             NotEnoughProductQuantityError,
+                                             NotFoundProductError)
+from market.bot.keyboards.product import (get_product_keyboard,
+                                          get_product_keyboard_before,
+                                          products_keyboard)
 from market.bot.service.basket_service import basket_service
 from market.bot.service.product_service import product_service
 
@@ -105,12 +100,10 @@ async def get_information_about_product(callback: CallbackQuery, state: FSMConte
 
 @router.callback_query(F.data.startswith("basket:add:"))
 async def add_product_to_basket(callback: CallbackQuery, state: FSMContext):
+    product_id = int(callback.data.split(":")[-1])
     try:
-        product_id = int(callback.data.split(":")[-1])
-        telegram_id = callback.from_user.id
-
         product_info = await basket_service.get_product_for_cart_input(
-            telegram_id=telegram_id, product_id=product_id
+            telegram_id=callback.from_user.id, product_id=product_id
         )
 
         await state.update_data(
@@ -124,11 +117,7 @@ async def add_product_to_basket(callback: CallbackQuery, state: FSMContext):
             f"Введите количество для '{product_info.name}' (1..{product_info.available})",
         )
 
-    except NotFoundProductError:
-        await callback.answer("Этот товар закончился")
-        return
-
-    except NotEnoughProductQuantityError:
+    except (NotFoundProductError, NotEnoughProductQuantityError):
         await callback.answer("Этот товар закончился")
         return
 
@@ -159,6 +148,13 @@ async def process_product_quantity(message: Message, state: FSMContext):
             telegram_id=telegram_id, product_id=product_id, quantity=quantity
         )
 
+        await state.clear()
+        if slug:
+            await message.answer(
+                text="Товар успешно добавлен в корзину",
+                reply_markup=get_product_keyboard_before(slug=slug),
+            )
+
     except ValueError:
         await message.answer("Введите число")
         return
@@ -172,17 +168,6 @@ async def process_product_quantity(message: Message, state: FSMContext):
         await message.answer("Недостаточно товара на складе")
         return
 
-    except AddProductToBasketError:
+    except Exception:
         await message.answer("Не удалось добавить товара в корзину. Попробуйте позже")
         return
-
-    except Exception:
-        await message.answer("Ошибка. Работы хэндлера")
-        return
-
-    await state.clear()
-    if slug:
-        await message.answer(
-            text="Товар успешно добавлен в корзину",
-            reply_markup=get_product_keyboard_before(slug=slug),
-        )

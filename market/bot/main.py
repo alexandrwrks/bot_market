@@ -2,10 +2,10 @@ import asyncio
 
 from aiogram import Bot, Dispatcher
 
-from market.utils.config import settings
-from market.database import init_db
 from market.bot.handlers import routers
 from market.bot.service.user_service import user_service
+from market.database import init_db
+from market.utils.config import settings
 
 
 async def main():
@@ -30,4 +30,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print(f"Остановка бота!")
+        print("Остановка бота!")

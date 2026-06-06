@@ -8,7 +8,8 @@ def get_exists_catalog_for_admin(existing_categories):
 
     for category in existing_categories:
         keyboard.button(
-            text=category.name, callback_data=f"admin_panel:catalog:category:{category.slug}"
+            text=category.name,
+            callback_data=f"admin_panel:catalog:category:{category.slug}",
         )
 
     keyboard.button(text="🔙 Назад", callback_data="admin_panel:menu")
@@ -21,7 +22,8 @@ def get_admin_products_keyboard(products: list[Product], slug: str):
 
     for product in products:
         keyboard.button(
-            text=f"{product.name}", callback_data=f"admin_panel:catalog:products:{slug}:{product.id}"
+            text=f"{product.name}",
+            callback_data=f"admin_panel:catalog:products:{slug}:{product.id}",
         )
 
     keyboard.button(text="🔙 Назад", callback_data="admin_panel:products:update")
@@ -36,13 +38,16 @@ def get_options_for_changes(slug: str, product_id: int):
     цена, количество, фото, описание, удаление товара(мягкое),
     """
     keyboard.button(
-        text="Изменить цену товара", callback_data=f"admin_panel:change:price:{slug}:{product_id}"
+        text="Изменить цену товара",
+        callback_data=f"admin_panel:change:price:{slug}:{product_id}",
     )
     keyboard.button(
-        text="Изменить количество", callback_data=f"admin_panel:change:quantity:{slug}:{product_id}"
+        text="Изменить количество",
+        callback_data=f"admin_panel:change:quantity:{slug}:{product_id}",
     )
     keyboard.button(
-        text="Изменить фото", callback_data=f"admin_panel:change:photo:{slug}:{product_id}"
+        text="Изменить фото",
+        callback_data=f"admin_panel:change:photo:{slug}:{product_id}",
     )
     keyboard.button(
         text="Изменить описание",
@@ -54,7 +59,8 @@ def get_options_for_changes(slug: str, product_id: int):
     )
 
     keyboard.button(
-        text="🔄 Выбрать другой вкус", callback_data=f"admin_panel:catalog:category:{slug}"
+        text="🔄 Выбрать другой вкус",
+        callback_data=f"admin_panel:catalog:category:{slug}",
     )
     keyboard.button(
         text="🔙 Вернуться к категориям", callback_data="admin_panel:products:update"

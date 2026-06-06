@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 
+from market.crm.exceptions.login import EmailError, PasswordError
 from market.crm.schemas.login import LoginUser
 from market.crm.service import login_service
-from market.crm.exceptions.login import EmailError, PasswordError
 
 router = APIRouter()
 

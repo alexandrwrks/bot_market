@@ -1,15 +1,13 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, FSInputFile, Message
 
 from market.bot.exception.product_ex import NotFoundProductError
+from market.bot.fsm.fsms import PriceChange
 from market.bot.keyboards.admin_keyboards.product_update import (
-    get_admin_products_keyboard,
-    get_options_for_changes,
-    get_exists_catalog_for_admin,
-    get_access_options,
-)
+    get_access_options, get_admin_products_keyboard,
+    get_exists_catalog_for_admin, get_options_for_changes)
 from market.bot.service.admin_service import admin_service
 from market.bot.service.category_service import category_service
 from market.bot.service.product_service import product_service
@@ -130,14 +128,6 @@ async def process_admin_product(callback: CallbackQuery):
             show_alert=True,
         )
 
-
-from aiogram.fsm.state import State, StatesGroup
-
-
-class PriceChange(StatesGroup):
-    new_price = State()
-
-
 @router.callback_query(F.data.startswith("admin_panel:change:price"))
 async def process_price_change(callback: CallbackQuery, state: FSMContext):
     try:
@@ -156,7 +146,7 @@ async def process_price_change(callback: CallbackQuery, state: FSMContext):
         await callback.answer()
         await callback.message.answer(text="Напишите новую цену:")
 
-    except Exception as e:
+    except Exception:
         await callback.answer(
             text="Ошибка изменения цены. Попробуйте позже.",
             show_alert=True,
@@ -214,7 +204,8 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
             photo=FSInputFile(product.photo_path),
             caption=caption,
             reply_markup=get_options_for_changes(
-                slug=data["product_id"], product_id=data["product_id"]),
+                slug=data["product_id"], product_id=data["product_id"]
+            ),
         )
 
     except Exception:

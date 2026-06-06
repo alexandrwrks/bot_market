@@ -1,4 +1,4 @@
-from market.database import models
+from market.database import models  # noqa: F401
 from market.database.config import engine
 from market.database.models import Base
 

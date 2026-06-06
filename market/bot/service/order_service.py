@@ -1,25 +1,23 @@
-from market.database.config import SessionLocal
-from market.utils import logger
+from typing import List
+
 from market.bot.exception.basket_ex import NotProductsInBasket
-from market.bot.exception.order_ex import (
-    NotUserOrder,
-    CostEnoughError,
-    CreateOrderError,
-)
+from market.bot.exception.order_ex import (CostEnoughError, CreateOrderError,
+                                           NotUserOrder)
+from market.database.config import SessionLocal
+from market.database.models import Order
 from market.repo import BasketRepo
 from market.repo.order_repo import OrderRepo
-
-from typing import List
-from market.database.models import Order
-from market.schemas.schema import UserOrderInfo, OrderInfo, OrderInfoItem
+from market.schemas.schema import OrderInfo, OrderInfoItem, UserOrderInfo
+from market.utils import logger
 
 
 class OrderService:
-    async def create_order(self, telegram_id: int, user_data: dict):
-        async with SessionLocal() as session:
-            order_repo = OrderRepo(session)
-            basket_repo = BasketRepo(session)
-            try:
+    async def create_order(self, telegram_id: int, user_data: dict) -> bool:
+        try:
+            async with SessionLocal() as session:
+                order_repo = OrderRepo(session)
+                basket_repo = BasketRepo(session)
+
                 async with session.begin():
                     """Создание заказа
                     telegram_id: int,
@@ -74,15 +72,16 @@ class OrderService:
                     )
                     return True
 
-            except Exception:
-                logger.exception("Ошибка создания заказа")
-                raise
+        except Exception:
+            logger.exception("Ошибка создания заказа")
+            raise
 
     async def get_user_orders(self, telegram_id: int) -> List[Order]:
         """Выдаём все заказы которые есть у пользователя"""
-        async with SessionLocal() as session:
-            order_repo = OrderRepo(session)
-            try:
+        try:
+            async with SessionLocal() as session:
+                order_repo = OrderRepo(session)
+
                 orders = await order_repo.get_user_orders_info(telegram_id=telegram_id)
                 if not orders:
                     raise NotUserOrder()
@@ -100,14 +99,15 @@ class OrderService:
 
                 return lst_orders
 
-            except Exception:
-                logger.exception("Ошибка выдачи заказов пользователя=%s", telegram_id)
-                raise
+        except Exception:
+            logger.exception("Ошибка выдачи заказов пользователя=%s", telegram_id)
+            raise
 
-    async def get_order_details(self, telegram_id: int, order_id: int):
-        async with SessionLocal() as session:
-            order_repo = OrderRepo(session)
-            try:
+    async def get_order_details(self, telegram_id: int, order_id: int) -> List:
+        try:
+            async with SessionLocal() as session:
+                order_repo = OrderRepo(session)
+
                 order_items = await order_repo.get_order_details(
                     telegram_id=telegram_id, order_id=order_id
                 )
@@ -117,19 +117,16 @@ class OrderService:
 
                 return order_items
 
-            except NotUserOrder:
-                return []
+        except Exception:
+            logger.exception(
+                "Ошибка выдачи заказа=%s пользователю=%s", order_id, telegram_id
+            )
+            raise
 
-            except Exception:
-                logger.exception(
-                    "Ошибка выдачи заказа=%s пользователю=%s", order_id, telegram_id
-                )
-                return []
-
-    async def check_user_basket_for_order(self, telegram_id: int):
-        async with SessionLocal() as session:
-            async with session.begin():
-                try:
+    async def check_user_basket_for_order(self, telegram_id: int) -> bool:
+        try:
+            async with SessionLocal() as session:
+                async with session.begin():
                     basket_repo = BasketRepo(session)
 
                     basket_price = await basket_repo.get_active_basket_total_price(
@@ -141,16 +138,15 @@ class OrderService:
 
                     return True
 
-                except Exception:
-                    logger.exception(
-                        "Ошибка проверки корзины пользователя=%s", telegram_id
-                    )
-                    raise
+        except Exception:
+            logger.exception("Ошибка проверки корзины пользователя=%s", telegram_id)
+            raise
 
     async def get_user_order_info(self, order_id: int) -> OrderInfo:
-        async with SessionLocal() as session:
-            order_repo = OrderRepo(session)
-            try:
+        try:
+            async with SessionLocal() as session:
+                order_repo = OrderRepo(session)
+
                 order_items = await order_repo.get_order_items(order_id=order_id)
                 if not order_items:
                     raise NotUserOrder()
@@ -178,9 +174,9 @@ class OrderService:
 
                 return order_info
 
-            except Exception as e:
-                logger.exception("Ошибка: ", e)
-                raise
+        except Exception as e:
+            logger.exception("Ошибка: ", e)
+            raise
 
 
 order_service = OrderService()

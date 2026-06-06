@@ -1,5 +1,4 @@
-from fastapi import APIRouter, status, HTTPException
-from sqlalchemy.testing.pickleable import User
+from fastapi import APIRouter, HTTPException, status
 
 router = APIRouter(
     prefix="/orders",

@@ -5,17 +5,12 @@ from aiogram.types import CallbackQuery, Message
 from phonenumbers import NumberParseException
 from pydantic import BaseModel, ValidationError, field_validator
 
-from market.bot.keyboards.start import get_start_inline_keyboard
 from market.bot.exception.basket_ex import NotProductsInBasket
-from market.bot.exception.order_ex import (
-    CostEnoughError,
-    CreateOrderError,
-)
+from market.bot.exception.order_ex import CostEnoughError, CreateOrderError
 from market.bot.exception.user_ex import NotFoundUserError
-from market.bot.fsm.order_fsm import OrderFSM
-from market.bot.keyboards.orders import (
-    get_confirm_order,
-)
+from market.bot.fsm.fsms import OrderFSM
+from market.bot.keyboards.orders import get_confirm_order
+from market.bot.keyboards.start import get_start_inline_keyboard
 from market.bot.service.order_service import order_service
 
 router = Router()

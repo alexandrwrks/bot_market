@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import List, Optional
 
-from sqlalchemy import select, update, func
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from market.database.models import Product, Category
 from market.bot.exception.product_ex import NotEnoughProductQuantityError
+from market.database.models import Category, Product
 
 
 @dataclass
@@ -68,8 +68,8 @@ class ProductRepo:
             .join(Category, Product.category_id == Category.id)
             .where(
                 Category.slug == slug,
-                Category.is_active == True,
-                Product.is_active == True,
+                Category.is_active.is_(True),
+                Product.is_active.is_(True),
                 Product.quantity > 0,
             )
             .order_by(Product.id)
