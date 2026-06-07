@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from app.database.config import SessionLocal
 from app.repo import OrderRepo, ProductRepo, UserRepo
+from app.repo.product_repo import ProductCreate
 from app.utils import logger
 from app.utils.config import settings
 
@@ -160,5 +161,21 @@ class AdminService:
             logger.exception("Failed to delete product: product_id=%s", product_id)
             raise
 
+    async def add_new_product(self, data: dict) -> int:
+        try:
+            async with SessionLocal() as session:
+                async with session.begin():
+                    product_repo = ProductRepo(session)
+
+                    product_info = ProductCreate.model_validate(data)
+
+                    product_id = await product_repo.create_product(product_info)
+
+                    logger.info("Успешное добавления товара: product_name=%s", product_info.name)
+                    return product_id
+
+        except Exception:
+            logger.exception("Failed to add new product")
+            raise
 
 admin_service = AdminService()

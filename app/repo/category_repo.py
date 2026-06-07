@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,7 +28,7 @@ class CategoryRepo:
 
         return result.scalar_one_or_none()
 
-    async def get_existing_categories(self) -> list[Category]:
+    async def get_existing_categories(self) -> List[Category]:
         """Метод для выдачи названия категорий только тех где есть хоть какой-то товар имея именно эту категорию"""
         result = await self.session.execute(
             select(Category)
@@ -42,4 +42,8 @@ class CategoryRepo:
             .order_by(Category.id)
         )
 
+        return list(result.scalars().all())
+
+    async def get_categories(self) -> List[Category]:
+        result = await self.session.execute(select(Category))
         return list(result.scalars().all())

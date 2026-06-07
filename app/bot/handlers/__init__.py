@@ -8,6 +8,7 @@ from app.bot.handlers.order.order_confirm import router as order_confirm
 from app.bot.handlers.order.order_hand import router as orders_router
 from app.bot.handlers.product_hand import router as product_router
 from app.bot.handlers.start_hand import router as start_router
+from app.bot.handlers.admin_routers.add_product import router as add_product_router
 
 routers = (
     start_router,
@@ -19,4 +20,5 @@ routers = (
     order_confirm,
     admin_product_router,
     quantity_router,
+    add_product_router,
 )

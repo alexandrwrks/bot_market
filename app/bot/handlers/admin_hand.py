@@ -5,7 +5,7 @@ from aiogram.types import CallbackQuery, Message
 from app.bot.exception.user_ex import NotFoundUserError, UserAdminLicense
 from app.bot.keyboards.admin_keyboars import (get_admin_inline_keyboard,
                                               get_back_admin_keyboard,
-                                              get_different_keyboard, access_product_delete)
+                                              access_product_delete)
 from app.bot.keyboards.start import get_start_inline_keyboard
 from app.bot.service.admin_service import admin_service
 from app.bot.service.user_service import user_service
@@ -48,21 +48,6 @@ async def admin_panel_menu(callback: CallbackQuery):
     await callback.answer()
     await callback.message.edit_text(
         text=WELCOME_MESSAGE, reply_markup=get_admin_inline_keyboard()
-    )
-
-
-@router.callback_query(F.data == "admin_panel:products:add")
-async def admin_products_callback(callback: CallbackQuery):
-    """
-    Добавить FSM для добавления товара:
-    1) выбор категории → добавляем новую если её нет в БД
-    2) FSM для написания данных о товаре
-    3) подтверждение добавления товара
-    """
-    await callback.answer()
-    await callback.message.edit_text(
-        text="Добавление товаров находится в разработке. Попробуйте позже.",
-        reply_markup=get_back_admin_keyboard(),
     )
 
 
@@ -110,7 +95,7 @@ async def admin_statistics_callback(callback: CallbackQuery):
     """
     try:
         admin_info = await admin_service.get_admin_info()
-        keyboard = get_different_keyboard()
+        keyboard = get_back_admin_keyboard()
 
         text = (
             f"\tСтатистика:\n"

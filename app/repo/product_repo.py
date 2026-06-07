@@ -1,15 +1,14 @@
-from dataclasses import dataclass
 from typing import List, Optional
 
-from sqlalchemy import func, select, update
+from pydantic import BaseModel
+from sqlalchemy import func, select, update, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.bot.exception.product_ex import NotEnoughProductQuantityError
 from app.database.models import Category, Product
 
 
-@dataclass
-class NewProduct:
+class ProductCreate(BaseModel):
     category_id: int
     name: str
     description: str
@@ -22,18 +21,21 @@ class ProductRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create_product(self, product_info: NewProduct):
-        product = Product(
-            category_id=product_info.category_id,
-            name=product_info.name,
-            description=product_info.description,
-            price=product_info.price,
-            quantity=product_info.quantity,
-            photo_path=product_info.photo_path,
+    async def create_product(self, product_info: ProductCreate) -> int:
+        product_id = await self.session.execute(
+            insert(Product)
+            .values(
+                category_id=product_info.category_id,
+                name=product_info.name,
+                description=product_info.description,
+                price=product_info.price,
+                quantity=product_info.quantity,
+                photo_path=product_info.photo_path,
+            )
+            .returning(Product.id)
         )
 
-        self.session.add(product)
-        return product
+        return product_id.scalar_one()
 
     async def get_product_names_by_category_id(self, category_id: int):
         result = await self.session.execute(

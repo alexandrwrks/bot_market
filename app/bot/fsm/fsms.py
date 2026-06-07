@@ -11,3 +11,12 @@ class PriceChange(StatesGroup):
 
 class QuantityChange(StatesGroup):
     new_quantity = State()
+
+
+class AddNewProduct(StatesGroup):
+    category_id = State()
+    name = State()
+    description = State()
+    price = State()
+    quantity = State()
+    photo_path = State()
