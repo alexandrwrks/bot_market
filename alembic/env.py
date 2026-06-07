@@ -3,8 +3,8 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from market.database.models import Base
-from market.utils import settings
+from app.database.models import Base
+from app.utils import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -111,13 +111,13 @@ ADMIN_IDS=list_of_telegram_ids
 ### Telegram Bot
 
 ```bash
-python -m market.bot.main
+python -m app.bot.main
 ```
 
 ### CRM
 
 ```bash
-python -m market.crm.main
+python -m app.api.main
 ```
 
 После запуска CRM будет доступна по адресу:
