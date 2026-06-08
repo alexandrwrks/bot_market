@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 
-from app.bot.service.user_service import user_service
 from app.api.config_template import templates
+from app.bot.service.user_service import user_service
 
 router = APIRouter(prefix="/users", tags=["users"])
 

@@ -1,16 +1,16 @@
-from aiogram import Router, F, Bot
+import uuid
+from pathlib import Path
+
+from aiogram import Bot, F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message, FSInputFile
+from aiogram.types import CallbackQuery, FSInputFile, Message
 
 from app.bot.fsm.fsms import AddNewProduct
-from app.bot.keyboards import categories
-from app.bot.keyboards.admin_keyboars import get_catalog_for_admin, get_admin_inline_keyboard, get_back_admin_keyboard, \
-    get_access_add_product
+from app.bot.keyboards.admin_keyboars import (get_access_add_product,
+                                              get_back_admin_keyboard,
+                                              get_catalog_for_admin)
 from app.bot.service.admin_service import admin_service
 from app.bot.service.category_service import category_service
-
-from pathlib import Path
-import uuid
 
 IMAGES_DIR = Path('images/products')
 IMAGES_DIR.mkdir(parents=True, exist_ok=True)
@@ -30,12 +30,12 @@ async def admin_products_callback(callback: CallbackQuery):
 
         await callback.answer()
         await callback.message.edit_text(
-            text="Выберите категорию",
+            text="📱 Выберите категорию",
             reply_markup=get_catalog_for_admin(categories)
         )
 
     except Exception:
-        await callback.answer(text="Ошибка получения категорий. Попробуйте позже")
+        await callback.answer("❌Ошибка получения категорий. Попробуйте позже")
         return
 
 @router.callback_query(F.data.startswith("admin_panel:products:add:"))
@@ -50,8 +50,8 @@ async def admin_panel_product_add(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer("Введите название для нового товара")
 
     except Exception:
-        await callback.answer("Возникла не предвиденная ошибка. Попробуйте позже.")
-
+        await callback.answer("❌ Возникла не предвиденная ошибка. Попробуйте позже.")
+        return
 
 @router.message(AddNewProduct.name)
 async def add_product_name(message: Message, state: FSMContext):
@@ -129,7 +129,7 @@ async def add_product_name(
 
     except Exception:
         await message.answer(
-            text="Ошибка добавления товара. Попробуйте позже.",
+            text="❌ Ошибка добавления товара. Попробуйте позже.",
             reply_markup=get_back_admin_keyboard()
         )
 
@@ -140,7 +140,7 @@ async def product_add_confirmation(callback: CallbackQuery, state: FSMContext):
         if action == "cancel":
             await state.clear()
             await callback.message.answer(
-                text="Отмена добавления товара",
+                text="✖️ Отмена добавления товара",
                 reply_markup=get_back_admin_keyboard()
             )
 
@@ -151,10 +151,10 @@ async def product_add_confirmation(callback: CallbackQuery, state: FSMContext):
 
             product_id = await admin_service.add_new_product(data)
 
-            await callback.message.answer(f"Успешное добавление товара {data['name']}, id: {product_id}")
+            await callback.message.answer(f"✅ Успешное добавление товара {data['name']}, id: {product_id}")
 
     except Exception:
         await callback.message.answer(
-            text="Ошибка добавления товара",
+            text="❌ Ошибка добавления товара",
             reply_markup=get_back_admin_keyboard()
         )

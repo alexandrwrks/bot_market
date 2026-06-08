@@ -20,3 +20,8 @@ class AddNewProduct(StatesGroup):
     price = State()
     quantity = State()
     photo_path = State()
+
+class AddNewCategory(StatesGroup):
+    name = State()
+    slug = State()
+    description = State()

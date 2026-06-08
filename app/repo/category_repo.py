@@ -1,25 +1,30 @@
-from typing import Optional, List
+from typing import List, Optional, Tuple
 
-from sqlalchemy import select
+from sqlalchemy import insert, not_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import Category, Product
+from app.schemas.schema import CategoryCreate
 
 
 class CategoryRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create_category(self, category_info: dict) -> Optional[Category]:
-        category = Category(
-            name=category_info["name"],
-            slug=category_info["slug"],
-            description=category_info.get("description"),
+    async def create_category(self, category_info: CategoryCreate) -> Tuple[int, str]:
+        result  = await self.session.execute(
+            insert(Category)
+            .values(
+                name=category_info.name,
+                slug=category_info.slug,
+            )
+            .returning(Category.id, Category.name)
         )
 
-        self.session.add(category)
+        category_id, category_name = result.one()
 
-        return category
+        return category_id, category_name
+
 
     async def get_category_by_slug(self, slug: str) -> Optional[Category]:
         result = await self.session.execute(
@@ -47,3 +52,11 @@ class CategoryRepo:
     async def get_categories(self) -> List[Category]:
         result = await self.session.execute(select(Category))
         return list(result.scalars().all())
+
+    async def update_category_active(self, category_id: int) -> None:
+        await self.session.execute(
+            update(Category)
+            .values(is_active=not_(Category.is_active))
+            .where(Category.id == category_id)
+            .where(Category.id == category_id)
+        )

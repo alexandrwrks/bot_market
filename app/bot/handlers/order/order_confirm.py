@@ -26,7 +26,7 @@ class PhoneValidator(BaseModel):
             parsed_phone = phonenumbers.parse(phone)
 
             if not phonenumbers.is_valid_number(parsed_phone):
-                raise ValidationError("Неверный номер телефона")
+                raise ValidationError("❌ Неверный номер телефона")
 
             return phonenumbers.format_number(
                 parsed_phone,
@@ -34,7 +34,7 @@ class PhoneValidator(BaseModel):
             )
 
         except NumberParseException:
-            raise ValidationError("Неверный номер телефона")
+            raise ValidationError("❌ Неверный номер телефона")
 
 
 @router.callback_query(F.data == "order:confirm")
@@ -55,13 +55,13 @@ async def confirm_order(callback: CallbackQuery, state: FSMContext):
 
     except NotFoundUserError:
         await callback.answer(
-            text="Пользователь не найден. Попробуйте позже",
+            text="✖️ Пользователь не найден. Попробуйте позже",
             show_alert=True,
         )
 
     except Exception:
         await callback.answer(
-            text="Ошибка сервера. Попробуйте позже",
+            text="❌ Ошибка сервера. Попробуйте позже",
             show_alert=True,
         )
 

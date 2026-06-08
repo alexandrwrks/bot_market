@@ -18,9 +18,9 @@ async def orders_btn(callback: CallbackQuery):
         for order in orders:
             text = (
                 f"Номер заказа: {order.id}\n"
-                f"Стоимость заказа: {order.total_price}\n"
-                f"Статус: {order.status}\n"
-                f"Создание заказа: {order.created_at}"
+                f"💰 Стоимость заказа: {order.total_price}\n"
+                f"⌛ Статус: {order.status}\n"
+                f"🕐 Создание заказа: {order.created_at}"
             )
 
             await callback.message.answer(
@@ -30,13 +30,13 @@ async def orders_btn(callback: CallbackQuery):
 
         await callback.answer()
         await callback.message.answer(
-            text="Выберите действие:",
+            text="📱 Выберите действие:",
             reply_markup=get_basket_and_catalog(),
         )
 
     except (Exception, NotUserOrder):
         await callback.answer(
-            text="У вас нет активных заказов",
+            text="✖️ У вас нет активных заказов",
             show_alert=True,
         )
 
@@ -56,20 +56,18 @@ async def get_order_message(message: Message):
 
             await message.answer(
                 text=text,
-                reply_markup=get_detail_keyboard(
-                    order.id
-                ),  # Кнопка подробнее что вывести что находится в заказе
+                reply_markup=get_detail_keyboard(order.id)
             )
 
         await message.answer(
-            text="Выберите действие:",
+            text="📱 Выберите действие:",
             reply_markup=get_basket_and_catalog(),
         )
 
     except (Exception, NotUserOrder):
         await message.delete()
         await message.answer(
-            text="У вас нет активных заказов",
+            text="✖️ У вас нет активных заказов",
             reply_markup=get_basket_and_catalog(),
         )
 
@@ -89,9 +87,9 @@ async def process_detail_order(callback: CallbackQuery):
 
         text = (
             f"Номер заказа: {order.id}\n"
-            f"Стоимость заказа: {order.total_price}\n"
-            f"Статус: {order.status}\n"
-            f"Создание заказа: {order.created_at}\n"
+            f"💰 Стоимость заказа: {order.total_price}\n"
+            f"⌛ Статус: {order.status}\n"
+            f"🕐 Создание заказа: {order.created_at}\n"
             f"{items_text}"
         )
 
@@ -103,11 +101,11 @@ async def process_detail_order(callback: CallbackQuery):
 
     except NotUserOrder:
         await callback.answer(
-            text="Ошибка нет такого заказа. Попробуйте позже",
+            text="✖️ Ошибка нет такого заказа. Попробуйте позже",
             show_alert=True,
         )
     except Exception:
         await callback.answer(
-            text="Ошибка показа заказа. Попробуйте позже",
+            text="❌ Ошибка показа заказа. Попробуйте позже",
             show_alert=True,
         )

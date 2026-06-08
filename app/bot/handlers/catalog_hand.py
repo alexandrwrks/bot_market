@@ -15,25 +15,26 @@ async def get_categories_of_catalog(callback: CallbackQuery):
     try:
         categories = await category_service.get_categories()
 
+        text = "📱 Выберите категорию:"
         keyboard = get_exists_catalog(categories)
 
         await callback.answer()
         try:
             await callback.message.edit_text(
-                text="Выберите категорию:",
+                text=text,
                 reply_markup=keyboard,
             )
 
         except TelegramBadRequest:
             await callback.message.delete()
             await callback.message.answer(
-                text="Выберите категорию:",
+                text=text,
                 reply_markup=keyboard,
             )
 
     except NotCategoryError:
         await callback.answer(
-            text="Сейчас нет доступных категорий.",
+            text="❌ Сейчас нет доступных категорий.",
             show_alert=True,
         )
 
@@ -45,8 +46,8 @@ async def get_exists_category(message: Message):
 
         keyboard = get_exists_catalog(categories)
 
-        await message.answer(text="Выберите категорию:", reply_markup=keyboard)
+        await message.answer(text="📱 Выберите категорию:", reply_markup=keyboard)
 
-    except NotCategoryError:
-        await message.answer("Сейчас нет доступных категорий")
+    except (Exception, NotCategoryError):
+        await message.answer("❌ Сейчас нет доступных категорий")
         return

@@ -30,3 +30,7 @@ class ProductsInBasket(BaseModel):
     product_id: int
     name: str
     quantity: int
+
+class CategoryCreate(BaseModel):
+    name: str
+    slug: str

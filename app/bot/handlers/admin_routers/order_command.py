@@ -26,7 +26,7 @@ class PhoneValidator(BaseModel):
             parsed_phone = phonenumbers.parse(phone)
 
             if not phonenumbers.is_valid_number(parsed_phone):
-                raise ValidationError("Неверный номер телефона")
+                raise ValidationError("❌ Неверный номер телефона")
 
             return phonenumbers.format_number(
                 parsed_phone,
@@ -34,7 +34,7 @@ class PhoneValidator(BaseModel):
             )
 
         except NumberParseException:
-            raise ValidationError("Неверный номер телефона")
+            raise ValidationError("❌ Неверный номер телефона")
 
 
 def _get_information_text(order: OrderCreateSchema):
@@ -53,13 +53,13 @@ def get_order_information(telegram_id: int):
         text="🔄 Изменить адрес", callback_data=f"change_address:{telegram_id}"
     )
     keyboard.button(
-        text="🔄 Изменить имя", callback_data=f"change_full_name:{telegram_id}"
+        text="🔄 Изменить ФИО", callback_data=f"change_full_name:{telegram_id}"
     )
     keyboard.button(
         text="🔄 Изменить телефон", callback_data=f"change_phone:{telegram_id}"
     )
-    keyboard.button(text="Назад", callback_data="basket_btn")
-    keyboard.button(text="Подтвердить", callback_data=f"access_order:{telegram_id}")
+    keyboard.button(text="🔙 Назад", callback_data="basket_btn")
+    keyboard.button(text="✅ Подтвердить", callback_data=f"access_order:{telegram_id}")
 
     return keyboard.adjust(1).as_markup()
 
@@ -78,7 +78,7 @@ async def callback_query(callback: CallbackQuery):
 
     except Exception:
         await callback.answer(
-            text="Ошибка",
+            text="❌ Ошибка",
             show_alert=True,
         )
         return

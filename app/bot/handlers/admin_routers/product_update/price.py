@@ -40,25 +40,27 @@ async def admin_update_products_callback(callback: CallbackQuery):
     """
     try:
         categories = await category_service.get_categories()
+
+        text = "📱 Выберите категорию:"
         keyboard = get_exists_catalog_for_admin(categories)
 
         await callback.answer()
         try:
             await callback.message.edit_text(
-                text="Выберите категорию:",
+                text=text,
                 reply_markup=keyboard,
             )
 
         except TelegramBadRequest:
             await callback.message.delete()
             await callback.message.answer(
-                text="Выберите категорию:",
+                text=text,
                 reply_markup=keyboard,
             )
 
     except Exception:
         await callback.answer(
-            text="Ошибка выдачи категорий. Попробуйте позже.",
+            text="❌ Ошибка выдачи категорий. Попробуйте позже.",
             show_alert=True,
         )
 
@@ -69,25 +71,27 @@ async def process_admin_category(callback: CallbackQuery):
         slug = callback.data.split(":")[-1]
 
         products = await product_service.get_products_by_category(slug=slug)
+
+        text = "📱 Выберите товар:"
         keyboard = get_admin_products_keyboard(products, slug)
 
         await callback.answer()
         try:
             await callback.message.edit_text(
-                text="Выберите товар:",
+                text=text,
                 reply_markup=keyboard,
             )
 
         except TelegramBadRequest:
             await callback.message.delete()
             await callback.message.answer(
-                text="Выберите товар:",
+                text=text,
                 reply_markup=keyboard,
             )
 
     except Exception:
         await callback.answer(
-            text=f"Ошибка выдачи товара по категории {slug}",
+            text=f"❌ Ошибка выдачи товара по категории {slug}",
             show_alert=True,
         )
 
@@ -116,15 +120,9 @@ async def process_admin_product(callback: CallbackQuery):
             reply_markup=get_options_for_changes(slug=slug, product_id=product_id),
         )
 
-    except NotFoundProductError:
+    except (Exception, NotFoundProductError):
         await callback.answer(
-            text="Ошибка выдачи товара. Попробуйте позже.",
-            show_alert=True,
-        )
-
-    except Exception:
-        await callback.answer(
-            text="Ошибка получения товара. Попробуйте позже.",
+            text="❌ Ошибка получения товара. Попробуйте позже.",
             show_alert=True,
         )
 
@@ -149,7 +147,7 @@ async def process_price_change(callback: CallbackQuery, state: FSMContext):
 
     except Exception:
         await callback.answer(
-            text="Ошибка изменения цены. Попробуйте позже.",
+            text="❌ Ошибка изменения цены. Попробуйте позже.",
             show_alert=True,
         )
 
@@ -169,7 +167,7 @@ async def process_new_price(message: Message, state: FSMContext):
     await state.update_data(new_price=new_price)
 
     await message.answer(
-        text=f"Новая цена товара: {new_price}", reply_markup=get_access_options()
+        text=f"💰 Новая цена товара: {new_price}", reply_markup=get_access_options()
     )
 
 
@@ -187,7 +185,7 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
 
         await callback.answer()
 
-        await callback.message.answer("Успешное обновление цены")
+        await callback.message.answer("✅ Успешное обновление цены")
 
         product = await product_service.get_product_information(
             product_id=data["product_id"]
@@ -211,7 +209,7 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
 
     except Exception:
         await callback.answer(
-            text="Ошибка обновления цены",
+            text="❌ Ошибка обновления цены",
             show_alert=True,
         )
 
@@ -224,7 +222,7 @@ async def delete_price_change(callback: CallbackQuery, state: FSMContext):
 
     await callback.answer()
     await callback.message.answer(
-        text="Отмена изменения цены",
+        text="✖️ Отмена изменения цены",
         reply_markup=get_options_for_changes(
             slug=data["slug"],
             product_id=data["product_id"],

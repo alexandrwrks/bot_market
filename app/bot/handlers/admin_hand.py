@@ -2,10 +2,11 @@ from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
+
 from app.bot.exception.user_ex import NotFoundUserError, UserAdminLicense
-from app.bot.keyboards.admin_keyboars import (get_admin_inline_keyboard,
-                                              get_back_admin_keyboard,
-                                              access_product_delete)
+from app.bot.keyboards.admin_keyboars import (access_product_delete,
+                                              get_admin_inline_keyboard,
+                                              get_back_admin_keyboard)
 from app.bot.keyboards.start import get_start_inline_keyboard
 from app.bot.service.admin_service import admin_service
 from app.bot.service.user_service import user_service
@@ -26,21 +27,24 @@ async def admin_command(message: Message):
 
     except UserAdminLicense:
         await message.answer(
-            text="У Вас нет прав на использование админки",
+            text="У Вас отсутствуют права администратора",
             reply_markup=get_start_inline_keyboard(),
         )
+        return
 
     except NotFoundUserError:
         await message.answer(
             text="Команда не временно не работает. Попробуйте позже",
             reply_markup=get_start_inline_keyboard(),
         )
+        return
 
     except Exception:
         await message.answer(
-            text="Ошибка со стороны сервера. Попробуйте позже.",
+            text="❌ Ошибка со стороны сервера. Попробуйте позже.",
             reply_markup=get_start_inline_keyboard(),
         )
+        return
 
 
 @router.callback_query(F.data == "admin_panel:menu")
@@ -80,7 +84,7 @@ async def admin_orders_callback(callback: CallbackQuery):
 
     except Exception:
         await callback.message.answer(
-            text="Ошибка сервера. Попробуйте позже.",
+            text="❌ Ошибка сервера. Попробуйте позже.",
             reply_markup=get_back_admin_keyboard(),
         )
 
@@ -113,7 +117,7 @@ async def admin_statistics_callback(callback: CallbackQuery):
 
     except Exception:
         await callback.answer(
-            text="Ошибка сервера",
+            text="❌ Ошибка сервера",
             show_alert=True,
         )
 
@@ -132,7 +136,7 @@ async def change_delete_callback(callback: CallbackQuery):
 
     except Exception:
         await callback.answer(
-            text="Ошибка удаления товара",
+            text="❌ Ошибка удаления товара",
             show_alert=True,
         )
         return
@@ -146,27 +150,28 @@ async def delete_product_callback(callback: CallbackQuery):
         slug = parts[-3]
         product_id = int(parts[-2])
 
-        boolean = int(parts[-1])
+        action = parts[-1]
+
         """
         TODO: сделать условие на то какое значение будет в конце то действие и будет происходить
         Если 1 то удаляем если 0 то оставляем
         """
         await callback.message.delete()
-        if boolean == 0:
-            await callback.message.answer("Удаление товара отменено")
+        if action == "cancel":
+            await callback.message.answer("✖️ Удаление товара отменено")
 
             await callback.message.answer(
                 text=WELCOME_MESSAGE,
                 reply_markup=get_admin_inline_keyboard()
             )
 
-        elif boolean == 1:
+        elif action == "confirm":
             product_name = await admin_service.delete_product(product_id=product_id)
 
             if product_name is not None:
-                await callback.message.answer(f"Успешное удаление товара: {product_name}")
+                await callback.message.answer(f"✅ Успешное удаление товара: {product_name}")
             else:
-                await callback.message.asnwer("Успешное удаление товара")
+                await callback.message.asnwer("✅ Успешное удаление товара")
 
             await callback.message.answer(
                 text=WELCOME_MESSAGE,
@@ -176,7 +181,7 @@ async def delete_product_callback(callback: CallbackQuery):
     except Exception:
         await callback.message.delete()
         await callback.answer(
-            text="Ошибка удаления товара",
+            text="❌ Ошибка удаления товара",
             show_alert=True,
         )
         return

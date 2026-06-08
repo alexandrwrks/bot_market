@@ -2,12 +2,10 @@ from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery
 
-from app.bot.exception.basket_ex import (ClearBasketError,
-                                         NotProductsInBasket)
+from app.bot.exception.basket_ex import ClearBasketError, NotProductsInBasket
 from app.bot.exception.product_ex import NotFoundProductError
 from app.bot.exception.user_ex import NotFoundUserError
-from app.bot.keyboards.basket import (get_user_basket,
-                                      get_user_basket_products)
+from app.bot.keyboards.basket import get_user_basket, get_user_basket_products
 from app.bot.service.basket_service import basket_service
 
 router = Router()
@@ -104,9 +102,9 @@ async def product_basket(callback: CallbackQuery):
         )
 
         text = (
-            f"Товар добавлен в корзину\n"
+            f"✅ Товар добавлен в корзину\n"
             f"Количество: {quantity} шт.\n"
-            f"Сумма: {total_price} RUB"
+            f"💰 Сумма: {total_price} RUB"
         )
 
         await callback.message.answer(

@@ -28,6 +28,6 @@ async def confirm_order(callback: CallbackQuery):
 
     except Exception:
         await callback.answer(
-            text="Ошибка создания заказа",
+            text="❌ Ошибка создания заказа",
             show_alert=True,
         )

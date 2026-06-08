@@ -32,7 +32,7 @@ async def process_price_change(callback: CallbackQuery, state: FSMContext):
 
     except Exception:
         await callback.answer(
-            text="Ошибка изменения количества. Попробуйте позже.",
+            text="❌ Ошибка изменения количества. Попробуйте позже.",
             show_alert=True,
         )
 
@@ -46,7 +46,7 @@ async def process_new_price(message: Message, state: FSMContext):
             raise ValueError
 
     except ValueError:
-        await message.answer("Введите корректное количество числом")
+        await message.answer("❌ Введите корректное количество числом")
         return
 
     await state.update_data(new_quantity=new_quantity)
@@ -69,7 +69,7 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
 
         await state.clear()
 
-        await callback.message.answer("Успешное изменения количества!")
+        await callback.message.answer("✅ Успешное изменения количества!")
 
         product = await product_service.get_product_information(
             product_id=data["product_id"]
@@ -93,13 +93,13 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
 
     except NotFoundProductError:
         await callback.message.answer(
-            text="Панель администратора",
+            text="📲 Панель администратора",
             reply_markup=get_admin_inline_keyboard(),
         )
 
     except Exception:
         await callback.answer(
-            text="Ошибка обновления количества",
+            text="❌ Ошибка обновления количества",
             show_alert=True,
         )
 
@@ -110,7 +110,7 @@ async def delete_price_change(callback: CallbackQuery, state: FSMContext):
         data = await state.get_data()
         await state.clear()
 
-        await callback.message.answer(text="Отмена изменения количества")
+        await callback.message.answer(text="✖️ Отмена изменения количества")
 
         product = await product_service.get_product_information(
             product_id=data["product_id"]
@@ -135,6 +135,6 @@ async def delete_price_change(callback: CallbackQuery, state: FSMContext):
     except (Exception, NotFoundProductError):
         await callback.answer()
         await callback.message.answer(
-            text="Панель администратора",
+            text="📲 Панель администратора",
             reply_markup=get_admin_inline_keyboard(),
         )
