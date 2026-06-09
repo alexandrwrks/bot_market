@@ -1,6 +1,7 @@
-from sqlalchemy import func, insert, select
+from sqlalchemy import func, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.bot.fsm.order_fsm import OrderCreateSchema
 from app.database.models import Order, OrderItem, Product
 
 
@@ -156,3 +157,67 @@ class OrderRepo:
         )
 
         return result.scalars().all()
+
+    async def get_info_order(self, telegram_id: int) -> OrderCreateSchema:
+        result = await self.session.execute(
+            select(Order.full_name, Order.address, Order.phone)
+            .where(Order.telegram_id == telegram_id)
+        )
+
+        full_name, address, phone = result.scalars()
+
+        return OrderCreateSchema(
+            full_name=full_name,
+            address=address,
+            phone=phone,
+        )
+
+    async def update_order_address(self, address: str, telegram_id: int) -> OrderCreateSchema:
+        result = await self.session.execute(
+            update(Order)
+            .values(address=address)
+            .where(Order.telegram_id == telegram_id)
+            .returning(Order.full_name, Order.address, Order.phone)
+        )
+
+        full_name, address, phone = result.scalars()
+
+        return OrderCreateSchema(
+            full_name=full_name,
+            address=address,
+            phone=phone,
+        )
+
+
+    async def update_order_full_name(self, full_name: str, telegram_id: int) -> OrderCreateSchema:
+        result = await self.session.execute(
+            update(Order)
+            .values(full_name=full_name)
+            .where(Order.telegram_id == telegram_id)
+            .returning(Order.full_name, Order.address, Order.phone)
+        )
+
+        full_name, address, phone = result.scalars()
+
+        return OrderCreateSchema(
+            full_name=full_name,
+            address=address,
+            phone=phone,
+        )
+
+
+    async def update_order_phone(self, phone: str, telegram_id: int) -> OrderCreateSchema:
+        result = await self.session.execute(
+            update(Order)
+            .values(phone=phone)
+            .where(Order.telegram_id == telegram_id)
+            .returning(Order.full_name, Order.address, Order.phone)
+        )
+
+        full_name, address, phone = result.scalars()
+
+        return OrderCreateSchema(
+            full_name=full_name,
+            address=address,
+            phone=phone,
+        )

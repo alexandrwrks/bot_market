@@ -3,8 +3,8 @@ from typing import List
 from app.bot.exception.basket_ex import NotProductsInBasket
 from app.bot.exception.order_ex import (CostEnoughError, CreateOrderError,
                                         NotUserOrder)
+from app.bot.fsm.order_fsm import OrderCreateSchema
 from app.database.config import SessionLocal
-from app.database.models import Order
 from app.repo import BasketRepo
 from app.repo.order_repo import OrderRepo
 from app.schemas.schema import OrderInfo, OrderInfoItem, UserOrderInfo

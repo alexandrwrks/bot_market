@@ -1,19 +1,38 @@
 import phonenumbers
 from aiogram import F, Router
-from aiogram.types import CallbackQuery
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, Message
 from phonenumbers import NumberParseException
-from pydantic import BaseModel, ValidationError, field_validator
+from pydantic import BaseModel, field_validator
 
+from app.bot.exception.order_ex import CostEnoughError
+from app.bot.exception.user_ex import NotFoundUserError
+from app.bot.fsm.order_fsm import (NewAddress, NewFullName, NewPhone,
+                                   OrderCreateSchema)
+from app.bot.keyboards.orders import (get_back_to_confirm_order,
+                                      get_order_information)
 from app.bot.service.order_service import order_service
+from app.bot.service.user_service import user_service
+from app.utils import logger
 
 router = Router()
 
 
-class OrderCreateSchema(BaseModel):
-    address: str
-    full_name: str
-    phone: str
+"""MVP for create order
+
+router: order:confirm
+
+Выдача данных: изначально ❌
+
+Добавление данных в таблицу Users: full_name, address, phone 
+сохраняем данные и не удаляем их
+
+Создание заказа с status == created
+
+Добавление full_name, address, phone в таблицу Orders для того заказа который 
+создадим после router: order: done
+"""
+
 
 
 class PhoneValidator(BaseModel):
@@ -26,7 +45,7 @@ class PhoneValidator(BaseModel):
             parsed_phone = phonenumbers.parse(phone)
 
             if not phonenumbers.is_valid_number(parsed_phone):
-                raise ValidationError("❌ Неверный номер телефона")
+                raise ValueError("❌ Неверный номер телефона")
 
             return phonenumbers.format_number(
                 parsed_phone,
@@ -34,51 +53,199 @@ class PhoneValidator(BaseModel):
             )
 
         except NumberParseException:
-            raise ValidationError("❌ Неверный номер телефона")
+            raise ValueError("❌ Неверный номер телефона")
 
 
-def _get_information_text(order: OrderCreateSchema):
+def _get_information_text(user_info: OrderCreateSchema):
     return (
-        f"Для оформления заказа нужно указать:"
-        f"Адрес: {order.address}\n"
-        f"ФИО получателя: {order.full_name}\n"
-        f"Телефон: {order.phone}"
+        "Для оформления заказа нужно указать:\n\n"
+        f"Адрес: {user_info.address if user_info.address else '❌'}\n"
+        f"ФИО получателя: {user_info.full_name if user_info.full_name else '❌'}\n"
+        f"Телефон: {user_info.phone if user_info.phone else '❌'}"
     )
 
 
-def get_order_information(telegram_id: int):
-    keyboard = InlineKeyboardBuilder()
-
-    keyboard.button(
-        text="🔄 Изменить адрес", callback_data=f"change_address:{telegram_id}"
-    )
-    keyboard.button(
-        text="🔄 Изменить ФИО", callback_data=f"change_full_name:{telegram_id}"
-    )
-    keyboard.button(
-        text="🔄 Изменить телефон", callback_data=f"change_phone:{telegram_id}"
-    )
-    keyboard.button(text="🔙 Назад", callback_data="basket_btn")
-    keyboard.button(text="✅ Подтвердить", callback_data=f"access_order:{telegram_id}")
-
-    return keyboard.adjust(1).as_markup()
-
-
-@router.callback_query(F.data == "")
-async def callback_query(callback: CallbackQuery):
+@router.callback_query(F.data == "order:confirm")
+async def menu_order_confirm(callback: CallbackQuery):
     try:
-        order_info = await order_service.get_info_order(callback.from_user.id)
-        order = OrderCreateSchema(**order_info.dict())
+        await order_service.check_user_basket_for_order(callback.from_user.id)
+
+        order = await user_service.get_user_info_for_order(callback.from_user.id)
 
         await callback.answer()
-        await callback.message.answer(
+        await callback.message.edit_text(
             text=_get_information_text(order),
-            reply_markup=get_order_information(callback.from_user.id),
+            reply_markup=get_order_information(order),
+        )
+
+    except CostEnoughError:
+        await callback.answer(
+            text="В вашей корзине находится товаров стоимостью меньше 5000 рублей.",
+            show_alert=True,
+        )
+
+    except (Exception, NotFoundUserError) as e:
+        logger.exception(e)
+        await callback.answer(
+            text="❌ Ошибка получения данных",
+            show_alert=True,
+        )
+        return
+
+@router.callback_query(F.data == "order:change_address")
+async def order_change_address(callback: CallbackQuery, state: FSMContext):
+    try:
+        """
+        Замена адреса
+        """
+        await state.set_state(NewAddress.address)
+
+        await callback.message.edit_text(
+            text="Напишите новый адрес",
+            reply_markup=get_back_to_confirm_order(),
         )
 
     except Exception:
         await callback.answer(
-            text="❌ Ошибка",
+            text="❌ Ошибка изменения адреса. Попробуйте позже",
             show_alert=True,
         )
         return
+
+@router.message(NewAddress.address)
+async def new_address(message: Message, state: FSMContext):
+    try:
+        address = message.text.strip()
+
+        await state.update_data(address=address)
+        data = await state.get_data()
+        await state.clear()
+
+        order = await user_service.update_user_address(
+            data=data, telegram_id=message.from_user.id
+        )
+
+        await message.answer("✅ Успешное обновление данных")
+
+        await message.answer(
+            text=_get_information_text(order),
+            reply_markup=get_order_information(order),
+        )
+
+    except Exception as e:
+        await message.answer(
+            text="❌ Ошибка изменения адреса",
+            reply_markup=get_back_to_confirm_order()
+        )
+
+
+
+@router.callback_query(F.data == "order:change_full_name")
+async def callback_query(callback: CallbackQuery, state: FSMContext):
+    try:
+        """
+        Замена ФИО
+        """
+        await state.set_state(NewFullName.full_name)
+
+        await callback.message.edit_text(
+            text="Напишите ФИО:\n\nПример: Иванов Иван Иванович",
+            reply_markup=get_back_to_confirm_order(),
+        )
+
+    except Exception:
+        await callback.answer(
+            text="Ошибка обновления ФИО",
+            show_alert=True,
+        )
+        return
+
+@router.message(NewFullName.full_name)
+async def new_full_name(message: Message, state: FSMContext):
+    try:
+        full_name = message.text.strip()
+
+        await state.update_data(full_name=full_name)
+        data = await state.get_data()
+        await state.clear()
+
+        order = await user_service.update_user_full_name(
+            data=data, telegram_id=message.from_user.id
+        )
+
+        await message.answer("✅ Успешное обновление данных")
+
+
+        await message.answer(
+            text=_get_information_text(order),
+            reply_markup=get_order_information(order),
+        )
+
+    except Exception:
+        await message.answer(
+            text="❌ Ошибка изменения ФИО",
+            reply_markup=get_back_to_confirm_order()
+        )
+
+
+@router.callback_query(F.data == "order:change_phone")
+async def change_phone(callback: CallbackQuery, state: FSMContext):
+    try:
+        """
+        Замена телефона
+        """
+        await state.set_state(NewPhone.phone)
+
+        await callback.message.edit_text(
+            text="Введите новый номер телефона:\n\nПример: +7 999 000 9900",
+            reply_markup=get_back_to_confirm_order(),
+        )
+
+    except Exception:
+        await callback.answer(
+            text="❌ Ошибка обновления телефона",
+            show_alert=True,
+        )
+        return
+
+@router.message(NewPhone.phone)
+async def message_new_phone(message: Message, state: FSMContext):
+    try:
+        phone = message.text.replace(" ", "")
+        validated_phone = PhoneValidator(phone=phone)
+
+        await state.update_data(phone=validated_phone.phone)
+        data = await state.get_data()
+        await state.clear()
+
+        user_info = await user_service.update_user_phone(
+            data=data, telegram_id=message.from_user.id
+        )
+
+        await message.answer("✅ Успешное обновление данных")
+
+        await message.answer(
+            text=_get_information_text(user_info),
+            reply_markup=get_order_information(user_info),
+        )
+
+    except ValueError:
+        await message.answer("Не правильно введён номер телефона\n\nПример: +7 999 000 9900")
+        return
+
+    except Exception:
+        await message.answer(
+            text="❌ Ошибка изменения телефона",
+            reply_markup=get_back_to_confirm_order()
+        )
+
+@router.callback_query(F.data == "order:done")
+async def order_done(callback: CallbackQuery):
+    """
+    Оформление заказа
+    """
+    await callback.message.edit_text(
+        text="Создание заказа пока в разработке",
+        reply_markup=get_back_to_confirm_order(),
+    )
+

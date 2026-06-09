@@ -22,6 +22,10 @@ class User(Base):
     last_name: Mapped[str] = mapped_column(String(50), nullable=True)
     username: Mapped[str] = mapped_column(String(50), nullable=True)
 
+    address: Mapped[str] = mapped_column(String, nullable=True)
+    full_name: Mapped[str] = mapped_column(String, nullable=True)
+    phone: Mapped[str] = mapped_column(String, nullable=True)
+
     admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
@@ -136,8 +140,9 @@ class Order(Base):
         ForeignKey("users.telegram_id"), nullable=False, index=True
     )
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
-    phone: Mapped[str] = mapped_column(String, nullable=False)
+    full_name: Mapped[str] = mapped_column(String, nullable=True)
+    address: Mapped[str] = mapped_column(String, nullable=True)
+    phone: Mapped[str] = mapped_column(String, nullable=True)
     total_price: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="created", nullable=False)
 

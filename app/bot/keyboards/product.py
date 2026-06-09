@@ -37,7 +37,7 @@ def get_product_keyboard_before(slug: str):
     keyboard = InlineKeyboardBuilder()
 
     keyboard.button(
-        text="🔄 Выбрать другой вкус", callback_data=f"catalog:category:{slug}"
+        text="🔄 Выбрать другой вкус", callback_data=f"menu:catalog:category:{slug}"
     )
     keyboard.button(
         text="🔙 Вернуться к выбору категорий", callback_data="menu:catalog"
