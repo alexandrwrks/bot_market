@@ -33,20 +33,25 @@ class CategoryRepo:
 
         return result.scalar_one_or_none()
 
-    async def get_existing_categories(self) -> List[Category]:
+    async def get_existing_categories(self, admin: bool = False) -> List[Category]:
         """Метод для выдачи названия категорий только тех где есть хоть какой-то товар имея именно эту категорию"""
-        result = await self.session.execute(
+        query = (
             select(Category)
             .join(Product, Product.category_id == Category.id)
-            .where(
+        )
+
+        if not admin:
+            query = query.where(
                 Category.is_active.is_(True),
                 Product.is_active.is_(True),
                 Product.quantity > 0,
             )
-            .distinct()
-            .order_by(Category.id)
-        )
 
+        result = await self.session.execute(
+            query
+            .distinct()
+            .order_by(Category.id))
+        
         return list(result.scalars().all())
 
     async def get_categories(self) -> List[Category]:
@@ -57,6 +62,5 @@ class CategoryRepo:
         await self.session.execute(
             update(Category)
             .values(is_active=not_(Category.is_active))
-            .where(Category.id == category_id)
             .where(Category.id == category_id)
         )

@@ -27,7 +27,7 @@ async def admin_products_callback(callback: CallbackQuery):
     3) подтверждение добавления товара
     """
     try:
-        categories = await category_service.get_categories()
+        categories = await admin_service.get_admin_categories()
 
         await callback.answer()
         await callback.message.edit_text(

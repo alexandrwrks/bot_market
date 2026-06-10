@@ -1,14 +1,13 @@
 from app.bot.handlers.admin_hand import router as admin_router
 from app.bot.handlers.admin_routers import price_router as admin_product_router
 from app.bot.handlers.admin_routers import quantity_router
-from app.bot.handlers.admin_routers.add_category import \
+from app.bot.handlers.admin_routers.add.category import \
     router as add_category_router
-from app.bot.handlers.admin_routers.add_product import \
+from app.bot.handlers.admin_routers.add.product import \
     router as add_product_router
-from app.bot.handlers.admin_routers.order_command import \
-    router as order_command_router
 from app.bot.handlers.basket_hand import router as basket_router
 from app.bot.handlers.catalog_hand import router as categories_router
+from app.bot.handlers.order.order_command import router as order_command_router
 # from app.bot.handlers.order.order_confirm import router as order_confirm
 from app.bot.handlers.order.order_hand import router as orders_router
 from app.bot.handlers.product_hand import router as product_router

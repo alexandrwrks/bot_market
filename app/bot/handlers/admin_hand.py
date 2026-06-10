@@ -1,15 +1,22 @@
 from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, FSInputFile, Message
 
+from app.bot.exception.product_ex import NotFoundProductError
 from app.bot.exception.user_ex import NotFoundUserError, UserAdminLicense
+from app.bot.keyboards.admin_keyboards.product_update import (
+    get_admin_products_keyboard, get_exists_catalog_for_admin,
+    get_options_for_changes)
 from app.bot.keyboards.admin_keyboars import (access_product_delete,
                                               get_admin_inline_keyboard,
                                               get_back_admin_keyboard)
 from app.bot.keyboards.start import get_start_inline_keyboard
 from app.bot.service.admin_service import admin_service
+from app.bot.service.category_service import category_service
+from app.bot.service.product_service import product_service
 from app.bot.service.user_service import user_service
+from app.utils import logger
 
 router = Router()
 
@@ -182,6 +189,112 @@ async def delete_product_callback(callback: CallbackQuery):
         await callback.message.delete()
         await callback.answer(
             text="❌ Ошибка удаления товара",
+            show_alert=True,
+        )
+        return
+
+
+@router.callback_query(F.data == "admin_panel:products:update")
+async def admin_update_products_callback(callback: CallbackQuery):
+    """
+    Выбор продукта как у пользователя,
+    только после чего идут кнопки на выбор обновления данных:
+    Выдать категории → выдать товар по этой категории →
+    → нажать на кнопку изменения чего-то
+
+    Выбор изменений: цена, количество, фото, описание, удаление товара(мягкое),
+    """
+    try:
+        categories = await category_service.get_categories()
+
+        text = "📱 Выберите категорию:"
+        keyboard = get_exists_catalog_for_admin(categories)
+
+        await callback.answer()
+        try:
+            await callback.message.edit_text(
+                text=text,
+                reply_markup=keyboard,
+            )
+
+        except TelegramBadRequest:
+            await callback.message.delete()
+            await callback.message.answer(
+                text=text,
+                reply_markup=keyboard,
+            )
+
+    except Exception as e:
+        logger.error("Ошибка выдачи категорий %s", e)
+        await callback.answer(
+            text="❌ Ошибка выдачи категорий. Попробуйте позже.",
+            show_alert=True,
+        )
+        return
+
+
+@router.callback_query(F.data.startswith("admin_panel:catalog:category:"))
+async def process_admin_category(callback: CallbackQuery):
+    slug = callback.data.split(":")[-1]
+    try:
+        products = await product_service.get_products_by_category(slug=slug)
+
+        text = "📱 Выберите товар:"
+        keyboard = get_admin_products_keyboard(products, slug)
+
+        await callback.answer()
+        try:
+            await callback.message.edit_text(
+                text=text,
+                reply_markup=keyboard,
+            )
+
+        except TelegramBadRequest:
+            await callback.message.delete()
+            await callback.message.answer(
+                text=text,
+                reply_markup=keyboard,
+            )
+
+    except Exception as e:
+        logger.error("Ошибка получения товара по категории %s", e)
+
+        await callback.answer(
+            text=f"❌ Ошибка выдачи товара по категории {slug}",
+            show_alert=True,
+        )
+        return
+
+
+@router.callback_query(F.data.startswith("admin_panel:catalog:products:"))
+async def process_admin_product(callback: CallbackQuery):
+    try:
+        parts = callback.data.split(":")
+
+        slug = parts[3]
+        product_id = int(parts[4])
+
+        product = await product_service.get_product_information(product_id=product_id)
+
+        caption = (
+            f"{product.name}\n\n"
+            f"{product.description}\n\n"
+            f"💰 Стоимость: {product.price} RUB за 1 шт.\n"
+            f"В наличии: {product.quantity} шт."
+        )
+
+        await callback.answer()
+        await callback.message.answer_photo(
+            photo=FSInputFile(product.photo_path),
+            caption=caption,
+            reply_markup=get_options_for_changes(slug=slug, product_id=product_id),
+        )
+
+    except (Exception, NotFoundProductError) as e:
+        logger.error("Ошибка получения товара %s", e)
+
+        await callback.answer(
+            text="❌ Ошибка получения товара. Попробуйте позже.",
             show_alert=True,
         )
         return

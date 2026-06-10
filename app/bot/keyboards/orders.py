@@ -1,6 +1,6 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from app.bot.handlers.admin_routers.order_command import OrderCreateSchema
+from app.bot.handlers.order.order_command import OrderCreateSchema
 
 
 def get_user_orders(orders):

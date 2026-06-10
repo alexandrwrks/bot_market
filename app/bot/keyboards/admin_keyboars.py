@@ -54,6 +54,8 @@ def get_catalog_for_admin(categories: List[Category]):
                 callback_data=f"admin_panel:products:add:{category.id}"
             )
 
+    keyboard.button(text="🔙 Вернуться в главное меню", callback_data="admin_panel:menu")
+
     return keyboard.adjust(1).as_markup()
 
 def get_access_add_product():

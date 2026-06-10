@@ -6,6 +6,7 @@ from aiogram.exceptions import TelegramAPIError
 from pydantic import BaseModel
 
 from app.database.config import SessionLocal
+from app.database.models import Category
 from app.repo import CategoryRepo, OrderRepo, ProductRepo, UserRepo
 from app.repo.product_repo import ProductCreate
 from app.schemas.schema import CategoryCreate
@@ -128,7 +129,7 @@ class AdminService:
             async with SessionLocal() as session:
                 product_repo = ProductRepo(session)
                 async with session.begin():
-                    await product_repo.update_product_quantiy(
+                    await product_repo.update_product_quantity(
                         product_id=product_id, new_quantity=new_quantity
                     )
                     logger.info(
@@ -197,6 +198,19 @@ class AdminService:
 
         except Exception:
             logger.exception("Failed to add new category")
+            raise
+
+    async def get_admin_categories(self) -> List[Category]:
+        try:
+            async with SessionLocal() as session:
+                category_repo = CategoryRepo(session)
+
+                categories = await category_repo.get_existing_categories(admin=True)
+
+                return categories
+
+        except Exception:
+            logger.exception("Failed to get admin categories")
             raise
 
 admin_service = AdminService()

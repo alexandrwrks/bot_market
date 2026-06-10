@@ -56,6 +56,7 @@ async def process_new_price(message: Message, state: FSMContext):
         reply_markup=get_access_options_quantity(),
     )
 
+# TODO: улучшить callback_query для подтверждения цены
 
 @router.callback_query(F.data == "change:access_quantity")
 async def access_price_change(callback: CallbackQuery, state: FSMContext):

@@ -69,21 +69,6 @@ class ProductRepo:
 
         return product_name.scalar_one_or_none()
 
-    async def get_products_by_slug(self, slug: str):
-        result = await self.session.execute(
-            select(Product)
-            .join(Category, Product.category_id == Category.id)
-            .where(
-                Category.slug == slug,
-                Category.is_active.is_(True),
-                Product.is_active.is_(True),
-                Product.quantity > 0,
-            )
-            .order_by(Product.id)
-        )
-
-        return list(result.scalars().all())
-
     async def add_quantity(self, product_id: int, quantity: int) -> None:
         await self.session.execute(
             update(Product)
@@ -113,14 +98,25 @@ class ProductRepo:
 
         return result.scalar_one()
 
-    async def get_admin_products_by_slug(self, slug: str) -> List[Product]:
-        result = await self.session.execute(
+    async def get_products_by_slug(self, slug: str, include_inactive: bool = False) -> List[Product]:
+        # Использование:
+        # await repo.get_products_by_slug("category-name")  # для пользователей
+        # await repo.get_products_by_slug("category-name", include_inactive=True)  # для админа
+        query = (
             select(Product)
             .join(Category, Product.category_id == Category.id)
             .where(Category.slug == slug)
             .order_by(Product.id)
         )
 
+        if not include_inactive:
+            query = query.where(
+                Category.is_active.is_(True),
+                Product.is_active.is_(True),
+                Product.quantity > 0,
+            )
+
+        result = await self.session.execute(query)
         return list(result.scalars().all())
 
     async def update_product_price(self, product_id: int, new_price: int) -> None:
@@ -133,7 +129,7 @@ class ProductRepo:
 
         return result.scalar()
 
-    async def update_product_quantiy(self, product_id: int, new_quantity: int) -> None:
+    async def update_product_quantity(self, product_id: int, new_quantity: int) -> None:
         await self.session.execute(
             update(Product)
             .values(quantity=new_quantity)

@@ -181,17 +181,14 @@ class BasketService:
             )
             raise
 
-    async def render_user_basket(
-        self, telegram_id: int
-    ) -> Tuple[list[tuple[str, int, int]], int]:
+    async def render_user_basket(self, telegram_id: int) -> List[OrderInfoItem]:
         try:
             async with SessionLocal() as session:
                 basket_repo = BasketRepo(session)
 
                 items = await basket_repo.get_basket_summary(telegram_id)
-                total = sum(quantity * price for _, quantity, price in items)
 
-                return items, total
+                return items
 
         except Exception:
             logger.exception("Basket rendering error: telegram_id=%s", telegram_id)
@@ -229,6 +226,19 @@ class BasketService:
                 telegram_id,
                 product_id,
             )
+            raise
+
+    async def get_total_price(self, telegram_id: int) -> int:
+        try:
+            async with SessionLocal() as session:
+                basket_repo = BasketRepo(session)
+
+                total_price = await basket_repo.get_active_basket_total_price(telegram_id)
+
+                return total_price
+
+        except Exception as e:
+            logger.exception("Ошибка получения стоимости корзины %s", e)
             raise
 
 basket_service = BasketService()

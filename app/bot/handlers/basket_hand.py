@@ -13,25 +13,39 @@ from app.utils import logger
 
 router = Router()
 
+MIN_ORDER_PRICE = 5000
+
+def build_basket_text(total_price: int) -> str:
+    text = (
+        "🛒 Ваша корзина\n"
+        f"💰 Сумма товаров: {total_price} RUB\n"
+        "🚚 Доставка СДЭК: за счёт получателя\n"
+    )
+
+    if total_price < MIN_ORDER_PRICE:
+        missing = MIN_ORDER_PRICE - total_price
+
+        text += (
+            f"ℹ️ Минимальная сумма заказа — {MIN_ORDER_PRICE} ₽\n"
+            f"Добавьте товаров ещё на {missing} RUB"
+        )
+
+    else:
+        text += (
+            f"ℹ️ Минимальная сумма заказа — {MIN_ORDER_PRICE} ₽\n"
+        )
+
+    return text
 
 async def _render_basket(callback: CallbackQuery) -> None:
-    telegram_id = callback.from_user.id
-    await callback.answer()
     try:
-        items, total = await basket_service.render_user_basket(telegram_id)
+        telegram_id = callback.from_user.id
+        total_price = await basket_service.get_total_price(telegram_id)
         keyboard = get_user_basket()
 
-        if not items:
-            text = "Ваша корзина пуста.\nМинимальная сумма заказа - 5000 RUB."
+        text = build_basket_text(total_price)
 
-        else:
-            text = "Ваша корзина\n"
-            for name, quantity, price in items:
-                text += f"- {name}: {quantity} x {price} RUB\n"
-
-            text += f"💰 Сумма товаров: {total} RUB\n"
-            text +=  "ℹ Минимальная сумма заказа - 5000 RUB."
-
+        await callback.answer()
         try:
             await callback.message.edit_text(
                 text=text,

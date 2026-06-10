@@ -57,29 +57,6 @@ class OrderRepo:
             for order_id, total_price, status in result.all()
         ]
 
-    async def get_order_details(self, telegram_id: int, order_id: int):
-        result = await self.session.execute(
-            select(
-                Order.id,
-                Order.total_price,
-                Order.status,
-                Product.name,
-                OrderItem.quantity,
-                OrderItem.price_at_time,
-            )
-            .join(OrderItem, OrderItem.order_id == Order.id)
-            .join(Product, Product.id == OrderItem.product_id)
-            .where(
-                Order.id == order_id,
-                Order.telegram_id == telegram_id,
-            )
-        )
-
-        return [
-            (order_id, total_price, status, product_name, quantity, price)
-            for order_id, total_price, status, product_name, quantity, price in result.all()
-        ]
-
     async def get_count_of_orders(self):
         result = await self.session.execute(select(func.count(Order.id)))
         return result.scalar_one()

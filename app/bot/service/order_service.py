@@ -105,37 +105,11 @@ class OrderService:
             logger.exception("Ошибка выдачи заказов пользователя=%s", telegram_id)
             raise
 
-    async def get_order_details(self, telegram_id: int, order_id: int) -> List:
-        try:
-            async with SessionLocal() as session:
-                order_repo = OrderRepo(session)
-
-                order_items = await order_repo.get_order_details(
-                    telegram_id=telegram_id, order_id=order_id
-                )
-
-                if not order_items:
-                    logger.warning(
-                        "Failed to get order details: telegram_id=%s, order_id=%s",
-                        telegram_id, order_id
-                    )
-                    raise NotUserOrder()
-
-                return order_items
-
-        except Exception:
-            logger.exception(
-                "Ошибка выдачи заказа=%s пользователю=%s",
-                order_id, telegram_id
-            )
-            raise
-
     async def check_user_basket_for_order(self, telegram_id: int) -> bool:
         try:
             async with SessionLocal() as session:
+                basket_repo = BasketRepo(session)
                 async with session.begin():
-                    basket_repo = BasketRepo(session)
-
                     basket_price = await basket_repo.get_active_basket_total_price(
                         telegram_id=telegram_id
                     )

@@ -112,7 +112,7 @@ class BasketRepo:
             )
         )
 
-    async def get_basket_summary(self, telegram_id: int) -> list[tuple[str, int, int]]:
+    async def get_basket_summary(self, telegram_id: int) -> List[OrderInfoItem]:
         result = await self.session.execute(
             select(
                 Product.name,
@@ -126,7 +126,13 @@ class BasketRepo:
             )
         )
 
-        return [(name, quantity, price) for name, quantity, price in result.all()]
+        return [
+            OrderInfoItem(
+                name=name,
+                quantity=quantity,
+                price=price)
+            for name, quantity, price in result.all()
+        ]
 
     async def get_basket_products(self, basket_id: int):
         result = await self.session.execute(
