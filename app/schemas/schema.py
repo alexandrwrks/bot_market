@@ -14,7 +14,7 @@ class OrderInfoItem(BaseModel):
     price: int
 
     @property
-    def total(self):
+    def total(self) -> int:
         return self.quantity * self.price
 
 

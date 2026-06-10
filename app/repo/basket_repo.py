@@ -1,10 +1,10 @@
 from typing import List
 
-from sqlalchemy import delete, func, insert, select
+from sqlalchemy import delete, func, insert, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import Basket, BasketItem, Product
-from app.schemas.schema import ProductsInBasket
+from app.schemas.schema import OrderInfoItem, ProductsInBasket
 
 
 class BasketRepo:
@@ -208,3 +208,38 @@ class BasketRepo:
 
         total_price = result.scalar_one_or_none()
         return total_price or 0
+
+    async def get_basket_product_info(self, telegram_id: int, product_id: int) -> OrderInfoItem:
+        result = await self.session.execute(
+            select(
+                Product.name.label("name"),
+                BasketItem.quantity.label("quantity"),
+                BasketItem.price_at_time.label("price"),
+            )
+            .join(Product, BasketItem.product_id == Product.id)
+            .join(Basket, BasketItem.basket_id == Basket.id)
+            .where(
+                BasketItem.product_id == product_id,
+                Basket.telegram_id == telegram_id,
+
+            )
+        )
+
+        info = result.mappings().one()
+
+        return OrderInfoItem.model_validate(info)
+
+    async def update_product_quantity_in_basket(
+        self,
+        basket_id: int,
+        product_id: int,
+        new_quantity: int
+    ) -> None:
+        await self.session.execute(
+            update(BasketItem)
+            .values(quantity=new_quantity)
+            .where(
+                BasketItem.basket_id == basket_id,
+                BasketItem.product_id == product_id,
+            )
+        )

@@ -8,7 +8,7 @@ from app.bot.exception.user_ex import NotFoundUserError
 from app.database.config import SessionLocal
 from app.repo import BasketRepo
 from app.repo.product_repo import ProductRepo
-from app.schemas.schema import ProductsInBasket
+from app.schemas.schema import OrderInfoItem, ProductsInBasket
 from app.utils import logger
 
 
@@ -111,10 +111,9 @@ class BasketService:
         """Полностью убираю товар с корзины пользователя с id=product_id"""
         try:
             async with SessionLocal() as session:
+                basket_repo = BasketRepo(session)
+                product_repo = ProductRepo(session)
                 async with session.begin():
-                    basket_repo = BasketRepo(session)
-                    product_repo = ProductRepo(session)
-
                     basket_id = await basket_repo.get_basket_id_by_id(telegram_id)
                     if basket_id is None:
                         logger.warning(
@@ -213,19 +212,16 @@ class BasketService:
 
     async def get_total_price_for_product_in_basket(
         self, telegram_id: int, product_id: int
-    ) -> Tuple[int, int]:
+    ) -> OrderInfoItem:
         try:
             async with SessionLocal() as session:
                 basket_repo = BasketRepo(session)
 
-                quantity = await basket_repo.get_product_quantity_in_active_basket(
-                    telegram_id=telegram_id, product_id=product_id
-                )
-                total_price = await basket_repo.get_total_price_by_product_id(
+                info = await basket_repo.get_basket_product_info(
                     telegram_id=telegram_id, product_id=product_id
                 )
 
-                return quantity, total_price
+                return info
 
         except Exception:
             logger.exception(
@@ -234,6 +230,5 @@ class BasketService:
                 product_id,
             )
             raise
-
 
 basket_service = BasketService()

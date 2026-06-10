@@ -120,16 +120,13 @@ class UserService:
             raise
 
 
-    async def update_user_address(self, data: dict, telegram_id: int) -> OrderCreateSchema:
+    async def update_user_address(self, address: str, telegram_id: int) -> OrderCreateSchema:
         try:
             async with SessionLocal() as session:
                 user_repo = UserRepo(session)
                 async with session.begin():
+                    order = await user_repo.update_user_address(address, telegram_id)
 
-                    order = await user_repo.update_user_address(
-                        data['address'], telegram_id
-                    )
-                    print(order)
                     logger.info("Успешное обновление адреса: telegram_id=%s", telegram_id)
                     return order
 
@@ -137,15 +134,12 @@ class UserService:
             logger.exception("Failed to update address user information")
             raise
 
-    async def update_user_full_name(self, data: dict, telegram_id: int) -> OrderCreateSchema:
+    async def update_user_full_name(self, full_name: str, telegram_id: int) -> OrderCreateSchema:
         try:
             async with SessionLocal() as session:
                 user_repo = UserRepo(session)
                 async with session.begin():
-
-                    order = await user_repo.update_user_full_name(
-                        data['full_name'], telegram_id
-                    )
+                    order = await user_repo.update_user_full_name(full_name, telegram_id)
 
                     logger.info("Успешное обновление ФИО: telegram_id=%s", telegram_id)
                     return order
@@ -154,15 +148,12 @@ class UserService:
             logger.exception("Failed to update full_name user information")
             raise
 
-    async def update_user_phone(self, data: dict, telegram_id: int) -> OrderCreateSchema:
+    async def update_user_phone(self, phone: str, telegram_id: int) -> OrderCreateSchema:
         try:
             async with SessionLocal() as session:
                 user_repo = UserRepo(session)
                 async with session.begin():
-
-                    order = await user_repo.update_user_phone(
-                        data['phone'], telegram_id
-                    )
+                    order = await user_repo.update_user_phone(phone, telegram_id)
 
                     logger.info("Успешное обновление телефон: telegram_id=%s", telegram_id)
                     return order

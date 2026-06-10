@@ -5,8 +5,11 @@ from aiogram.types import CallbackQuery
 from app.bot.exception.basket_ex import ClearBasketError, NotProductsInBasket
 from app.bot.exception.product_ex import NotFoundProductError
 from app.bot.exception.user_ex import NotFoundUserError
-from app.bot.keyboards.basket import get_user_basket, get_user_basket_products
+from app.bot.keyboards.basket import (change_basket_product_info,
+                                      get_user_basket,
+                                      get_user_basket_products)
 from app.bot.service.basket_service import basket_service
+from app.utils import logger
 
 router = Router()
 
@@ -26,8 +29,8 @@ async def _render_basket(callback: CallbackQuery) -> None:
             for name, quantity, price in items:
                 text += f"- {name}: {quantity} x {price} RUB\n"
 
-            text += f"Сумма товаров: {total} RUB\n"
-            text += "Минимальная сумма заказа - 5000 RUB."
+            text += f"💰 Сумма товаров: {total} RUB\n"
+            text +=  "ℹ Минимальная сумма заказа - 5000 RUB."
 
         try:
             await callback.message.edit_text(
@@ -42,8 +45,8 @@ async def _render_basket(callback: CallbackQuery) -> None:
                 reply_markup=keyboard,
             )
 
-    except NotFoundProductError:
-        await callback.answer(text="Ошибка показа корзины. Попробуйте позже")
+    except (Exception, NotFoundProductError):
+        await callback.answer("Ошибка показа корзины. Попробуйте позже")
 
 
 @router.callback_query(F.data == "menu:basket")
@@ -53,7 +56,6 @@ async def get_basket(callback: CallbackQuery):
 
 @router.callback_query(F.data == "basket:composition")
 async def basket_composition(callback: CallbackQuery):
-    await callback.answer()
     try:
         products = await basket_service.get_basket_position(callback.from_user.id)
 
@@ -63,16 +65,16 @@ async def basket_composition(callback: CallbackQuery):
             )
             return
 
+        await callback.answer()
         text = f"Состав корзины ({len(products)} позиций)\n\nВыберите позицию:"
-        await callback.message.answer(
+        await callback.message.edit_text(
             text=text, reply_markup=get_user_basket_products(products)
         )
 
-    except Exception:
-        await callback.answer(
-            text="Ошибка выдачи товаров из корзины",
-        )
-
+    except Exception as e:
+        logger.exception(e)
+        await callback.answer("Ошибка выдачи товаров из корзины")
+        return
 
 @router.callback_query(F.data == "basket:clear")
 async def clear_basket(callback: CallbackQuery):
@@ -90,26 +92,65 @@ async def clear_basket(callback: CallbackQuery):
         await callback.answer(text="Ошибка очистки корзины", show_alert=True)
 
 
-@router.callback_query(F.data.startswith("basket:product"))
+"""
+MVP for get info about product in basket
+
+router: basket:product:product_id
+
+Получаем количество товаров в корзине и их суммарную стоимость по product_id
+
+✅ Товар добавлен в корзину
+Название: {product.name}
+Количество: {product.quantity} шт
+Стоимость за единицу товара: {product.price_at_time} RUB
+Сумма: {product.total_price} RUB
+| Удалить товар |
+| Добавить другой вкус |
+| Вернуться в корзину |
+"""
+@router.callback_query(F.data.startswith("basket:product:"))
 async def product_basket(callback: CallbackQuery):
     try:
-        product_id = callback.data.split(":")[-1]
-        (
-            quantity,
-            total_price,
-        ) = await basket_service.get_total_price_for_product_in_basket(
+        product_id = int(callback.data.split(":")[-1])
+
+        info = await basket_service.get_total_price_for_product_in_basket(
             telegram_id=callback.from_user.id, product_id=product_id
         )
 
         text = (
             f"✅ Товар добавлен в корзину\n"
-            f"Количество: {quantity} шт.\n"
-            f"💰 Сумма: {total_price} RUB"
+            f"Название: {info.name}\n"
+            f"Количество: {info.quantity} шт.\n"
+            f"Стоимость за одну шт: {info.price} RUB.\n"
+            f"💰 Сумма: {info.total} RUB"
         )
 
-        await callback.message.answer(
+        await callback.message.edit_text(
             text=text,
+            reply_markup=change_basket_product_info(product_id)
         )
 
-    except Exception:
-        await callback.message.answer(text="Ошибка")
+    except Exception as e:
+        logger.exception(e)
+        await callback.answer(
+            text="Ошибка получения данных о продукте",
+            show_alert=True,
+        )
+
+@router.callback_query(F.data.startswith("product:delete:"))
+async def delete_basket(callback: CallbackQuery):
+    try:
+        product_id = int(callback.data.split(":")[-1])
+
+        await basket_service.remove_product_from_basket(telegram_id=callback.from_user.id, product_id=product_id)
+
+        await callback.answer("Успешное удаление товара")
+        await _render_basket(callback)
+
+    except Exception as e:
+        logger.exception(e)
+        await callback.answer(
+            text="Ошибка удаления товара",
+            show_alert=True
+        )
+        return

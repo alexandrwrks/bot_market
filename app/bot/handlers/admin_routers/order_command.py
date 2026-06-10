@@ -56,6 +56,25 @@ class PhoneValidator(BaseModel):
             raise ValueError("❌ Неверный номер телефона")
 
 
+async def message_send_order_information(
+    message: Message,
+    order: OrderCreateSchema,
+) -> None:
+    await message.edit_text(
+        text=_get_information_text(order),
+        reply_markup=get_order_information(order),
+    )
+
+async def callback_send_order_information(
+    callback: CallbackQuery,
+    order: OrderCreateSchema
+) -> None:
+    await callback.message.edit_text(
+        text=_get_information_text(order),
+        reply_markup=get_order_information(order),
+    )
+
+
 def _get_information_text(user_info: OrderCreateSchema):
     return (
         "Для оформления заказа нужно указать:\n\n"
@@ -73,10 +92,13 @@ async def menu_order_confirm(callback: CallbackQuery):
         order = await user_service.get_user_info_for_order(callback.from_user.id)
 
         await callback.answer()
-        await callback.message.edit_text(
-            text=_get_information_text(order),
-            reply_markup=get_order_information(order),
-        )
+
+        await message_send_order_information(message, order)
+
+        # await callback.message.edit_text(
+        #     text=_get_information_text(order),
+        #     reply_markup=get_order_information(order),
+        # )
 
     except CostEnoughError:
         await callback.answer(
@@ -118,21 +140,17 @@ async def new_address(message: Message, state: FSMContext):
         address = message.text.strip()
 
         await state.update_data(address=address)
-        data = await state.get_data()
         await state.clear()
 
-        order = await user_service.update_user_address(
-            data=data, telegram_id=message.from_user.id
+        user_info = await user_service.update_user_address(
+            address=address, telegram_id=message.from_user.id
         )
 
-        await message.answer("✅ Успешное обновление данных")
-
-        await message.answer(
-            text=_get_information_text(order),
-            reply_markup=get_order_information(order),
-        )
+        await message_send_order_information(message, user_info)
 
     except Exception as e:
+        logger.exception(e)
+
         await message.answer(
             text="❌ Ошибка изменения адреса",
             reply_markup=get_back_to_confirm_order()
@@ -166,22 +184,17 @@ async def new_full_name(message: Message, state: FSMContext):
         full_name = message.text.strip()
 
         await state.update_data(full_name=full_name)
-        data = await state.get_data()
         await state.clear()
 
         order = await user_service.update_user_full_name(
-            data=data, telegram_id=message.from_user.id
+            full_name=full_name, telegram_id=message.from_user.id
         )
 
-        await message.answer("✅ Успешное обновление данных")
+        await message_send_order_information(message, order)
 
+    except Exception as e:
+        logger.exception(e)
 
-        await message.answer(
-            text=_get_information_text(order),
-            reply_markup=get_order_information(order),
-        )
-
-    except Exception:
         await message.answer(
             text="❌ Ошибка изменения ФИО",
             reply_markup=get_back_to_confirm_order()
@@ -197,11 +210,13 @@ async def change_phone(callback: CallbackQuery, state: FSMContext):
         await state.set_state(NewPhone.phone)
 
         await callback.message.edit_text(
-            text="Введите новый номер телефона:\n\nПример: +7 999 000 9900",
+            text="Введите номер телефона (например +79991234567):",
             reply_markup=get_back_to_confirm_order(),
         )
 
-    except Exception:
+    except Exception as e:
+        logger.exception(e)
+
         await callback.answer(
             text="❌ Ошибка обновления телефона",
             show_alert=True,
@@ -215,25 +230,21 @@ async def message_new_phone(message: Message, state: FSMContext):
         validated_phone = PhoneValidator(phone=phone)
 
         await state.update_data(phone=validated_phone.phone)
-        data = await state.get_data()
         await state.clear()
 
         user_info = await user_service.update_user_phone(
-            data=data, telegram_id=message.from_user.id
+            phone=validated_phone.phone, telegram_id=message.from_user.id
         )
 
-        await message.answer("✅ Успешное обновление данных")
+        await message_send_order_information(message, user_info)
 
-        await message.answer(
-            text=_get_information_text(user_info),
-            reply_markup=get_order_information(user_info),
-        )
-
-    except ValueError:
+    except ValueError as e:
+        logger.warning(e)
         await message.answer("Не правильно введён номер телефона\n\nПример: +7 999 000 9900")
         return
 
-    except Exception:
+    except Exception as e:
+        logger.exception(e)
         await message.answer(
             text="❌ Ошибка изменения телефона",
             reply_markup=get_back_to_confirm_order()
