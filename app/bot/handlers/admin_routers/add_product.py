@@ -11,6 +11,7 @@ from app.bot.keyboards.admin_keyboars import (get_access_add_product,
                                               get_catalog_for_admin)
 from app.bot.service.admin_service import admin_service
 from app.bot.service.category_service import category_service
+from app.utils import logger
 
 IMAGES_DIR = Path('images/products')
 IMAGES_DIR.mkdir(parents=True, exist_ok=True)
@@ -35,7 +36,9 @@ async def admin_products_callback(callback: CallbackQuery):
         )
 
     except Exception:
-        await callback.answer("❌Ошибка получения категорий. Попробуйте позже")
+        logger.error("Ошибка добавления товара")
+
+        await callback.answer("❌ Ошибка получения категорий. Попробуйте позже")
         return
 
 @router.callback_query(F.data.startswith("admin_panel:products:add:"))
@@ -49,7 +52,8 @@ async def admin_panel_product_add(callback: CallbackQuery, state: FSMContext):
         await callback.answer()
         await callback.message.answer("Введите название для нового товара")
 
-    except Exception:
+    except Exception as e:
+        logger.error("Ошибка выдачи категорий для добавления товара %s", e)
         await callback.answer("❌ Возникла не предвиденная ошибка. Попробуйте позже.")
         return
 
@@ -127,7 +131,9 @@ async def add_product_name(
             reply_markup=get_access_add_product(),
         )
 
-    except Exception:
+    except Exception as e:
+        logger.error("Ошибка пред показа товара %s", e)
+
         await message.answer(
             text="❌ Ошибка добавления товара. Попробуйте позже.",
             reply_markup=get_back_admin_keyboard()
@@ -153,7 +159,9 @@ async def product_add_confirmation(callback: CallbackQuery, state: FSMContext):
 
             await callback.message.answer(f"✅ Успешное добавление товара {data['name']}, id: {product_id}")
 
-    except Exception:
+    except Exception as e:
+        logger.error("Ошибка отработки хэндлера для добавления товара %s", e)
+
         await callback.message.answer(
             text="❌ Ошибка добавления товара",
             reply_markup=get_back_admin_keyboard()

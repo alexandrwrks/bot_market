@@ -11,6 +11,7 @@ from app.bot.keyboards.admin_keyboards.product_update import (
 from app.bot.service.admin_service import admin_service
 from app.bot.service.category_service import category_service
 from app.bot.service.product_service import product_service
+from app.utils import logger
 
 router = Router()
 
@@ -41,13 +42,12 @@ async def admin_update_products_callback(callback: CallbackQuery):
     try:
         categories = await category_service.get_categories()
 
-        text = "📱 Выберите категорию:"
         keyboard = get_exists_catalog_for_admin(categories)
 
         await callback.answer()
         try:
             await callback.message.edit_text(
-                text=text,
+                text="📱 Выберите категорию:",
                 reply_markup=keyboard,
             )
 
@@ -58,18 +58,19 @@ async def admin_update_products_callback(callback: CallbackQuery):
                 reply_markup=keyboard,
             )
 
-    except Exception:
+    except Exception as e:
+        logger.error("Ошибка выдачи категорий %s", e)
         await callback.answer(
             text="❌ Ошибка выдачи категорий. Попробуйте позже.",
             show_alert=True,
         )
+        return
 
 
 @router.callback_query(F.data.startswith("admin_panel:catalog:category:"))
 async def process_admin_category(callback: CallbackQuery):
+    slug = callback.data.split(":")[-1]
     try:
-        slug = callback.data.split(":")[-1]
-
         products = await product_service.get_products_by_category(slug=slug)
 
         text = "📱 Выберите товар:"
@@ -89,11 +90,14 @@ async def process_admin_category(callback: CallbackQuery):
                 reply_markup=keyboard,
             )
 
-    except Exception:
+    except Exception as e:
+        logger.error("Ошибка получения товара по категории %s", e)
+
         await callback.answer(
             text=f"❌ Ошибка выдачи товара по категории {slug}",
             show_alert=True,
         )
+        return
 
 
 @router.callback_query(F.data.startswith("admin_panel:catalog:products:"))
@@ -120,12 +124,14 @@ async def process_admin_product(callback: CallbackQuery):
             reply_markup=get_options_for_changes(slug=slug, product_id=product_id),
         )
 
-    except (Exception, NotFoundProductError):
+    except (Exception, NotFoundProductError) as e:
+        logger.error("Ошибка получения товара %s", e)
+
         await callback.answer(
             text="❌ Ошибка получения товара. Попробуйте позже.",
             show_alert=True,
         )
-
+        return
 
 @router.callback_query(F.data.startswith("admin_panel:change:price"))
 async def process_price_change(callback: CallbackQuery, state: FSMContext):
@@ -145,12 +151,14 @@ async def process_price_change(callback: CallbackQuery, state: FSMContext):
         await callback.answer()
         await callback.message.answer(text="Напишите новую цену:")
 
-    except Exception:
+    except Exception as e:
+        logger.error("Ошибка изменения цены товара %s", e)
+
         await callback.answer(
             text="❌ Ошибка изменения цены. Попробуйте позже.",
             show_alert=True,
         )
-
+        return
 
 @router.message(PriceChange.new_price)
 async def process_new_price(message: Message, state: FSMContext):
@@ -160,15 +168,15 @@ async def process_new_price(message: Message, state: FSMContext):
         if new_price < 0:
             raise ValueError
 
+        await state.update_data(new_price=new_price)
+
+        await message.answer(
+            text=f"💰 Новая цена товара: {new_price}", reply_markup=get_access_options()
+        )
+
     except ValueError:
         await message.answer("Введите корректную цену числом")
         return
-
-    await state.update_data(new_price=new_price)
-
-    await message.answer(
-        text=f"💰 Новая цена товара: {new_price}", reply_markup=get_access_options()
-    )
 
 
 @router.callback_query(F.data == "change:access_price")
@@ -207,12 +215,14 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
             ),
         )
 
-    except Exception:
+    except Exception as e:
+        logger.error("Ошибка обновления цены %s", e)
+
         await callback.answer(
             text="❌ Ошибка обновления цены",
             show_alert=True,
         )
-
+        return
 
 @router.callback_query(F.data == "change:delete_price")
 async def delete_price_change(callback: CallbackQuery, state: FSMContext):

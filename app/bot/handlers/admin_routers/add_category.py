@@ -8,6 +8,7 @@ from app.bot.keyboards.admin_keyboars import (access_add_new_category,
                                               get_categories_keyboard)
 from app.bot.service.admin_service import admin_service
 from app.bot.service.category_service import category_service
+from app.utils import logger
 
 router = Router()
 
@@ -31,7 +32,8 @@ async def add_category(callback: CallbackQuery):
             reply_markup=get_categories_keyboard(categories)
         )
 
-    except Exception:
+    except Exception as e:
+        logger.error("Ошибка отработки хэндлера для показа доступных категорий %s", e)
         await callback.answer(text="❌ Ошибка выдачи категорий. Попробуйте позже.")
         return
 
@@ -53,6 +55,7 @@ async def admin_panel_category_toggle(callback: CallbackQuery):
             text="❌ Ошибка изменения статуса категории",
             show_alert=True
         )
+        return
 
 @router.callback_query(F.data == "admin_panel:category:add")
 async def admin_panel_category_add(callback: CallbackQuery, state: FSMContext):
@@ -62,12 +65,14 @@ async def admin_panel_category_add(callback: CallbackQuery, state: FSMContext):
         await callback.answer()
         await callback.message.edit_text("Введите название для новой категории:")
 
-    except Exception:
+    except Exception as e:
+        logger.error("Ошибка добавления нового товара %s", e)
+
         await callback.answer(
             text="❌ Ошибка добавления нового товара",
             show_alert=True
         )
-    return
+        return
 
 @router.message(AddNewCategory.name)
 async def process_name_category(message: Message, state: FSMContext):
@@ -104,7 +109,7 @@ async def process_name_category(message: Message, state: FSMContext):
             text="❌ Ошибка обработки добавления категории",
             reply_markup=get_back_admin_keyboard()
         )
-
+        return
 
 
 @router.callback_query(F.data.startswith("admin_panel:category_add:"))
@@ -134,7 +139,8 @@ async def add_new_category(callback: CallbackQuery, state: FSMContext):
 
 
     except Exception as e:
-        print(e)
+        logger.error("Ошибка добавления новой категории %s", e)
+
         await callback.message.edit_text(
             text="❌ Ошибка добавления категории",
             reply_markup=get_back_admin_keyboard()

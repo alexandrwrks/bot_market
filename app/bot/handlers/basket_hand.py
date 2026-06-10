@@ -45,9 +45,10 @@ async def _render_basket(callback: CallbackQuery) -> None:
                 reply_markup=keyboard,
             )
 
-    except (Exception, NotFoundProductError):
-        await callback.answer("Ошибка показа корзины. Попробуйте позже")
+    except (Exception, NotFoundProductError) as e:
+        logger.warning("Ошибка показа пользовательской корзины %s", e)
 
+        await callback.answer("Ошибка показа корзины. Попробуйте позже")
 
 @router.callback_query(F.data == "menu:basket")
 async def get_basket(callback: CallbackQuery):
@@ -72,7 +73,8 @@ async def basket_composition(callback: CallbackQuery):
         )
 
     except Exception as e:
-        logger.exception(e)
+        logger.error("Ошибка выдачи показа товаров внутри корзины %s", e)
+
         await callback.answer("Ошибка выдачи товаров из корзины")
         return
 
@@ -88,7 +90,9 @@ async def clear_basket(callback: CallbackQuery):
     except NotProductsInBasket:
         await callback.answer(text="Корзина уже пуста", show_alert=True)
 
-    except (ClearBasketError, NotFoundUserError):
+    except (ClearBasketError, NotFoundUserError, Exception) as e:
+        logger.error("Ошибка очистки корзины пользователя %s", e)
+
         await callback.answer(text="Ошибка очистки корзины", show_alert=True)
 
 
@@ -131,7 +135,8 @@ async def product_basket(callback: CallbackQuery):
         )
 
     except Exception as e:
-        logger.exception(e)
+        logger.error("Ошибка показа информации о продукте %s", e)
+
         await callback.answer(
             text="Ошибка получения данных о продукте",
             show_alert=True,
@@ -148,7 +153,8 @@ async def delete_basket(callback: CallbackQuery):
         await _render_basket(callback)
 
     except Exception as e:
-        logger.exception(e)
+        logger.error("Failed product delete %s", e)
+
         await callback.answer(
             text="Ошибка удаления товара",
             show_alert=True

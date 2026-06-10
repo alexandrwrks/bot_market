@@ -93,12 +93,7 @@ async def menu_order_confirm(callback: CallbackQuery):
 
         await callback.answer()
 
-        await message_send_order_information(message, order)
-
-        # await callback.message.edit_text(
-        #     text=_get_information_text(order),
-        #     reply_markup=get_order_information(order),
-        # )
+        await callback_send_order_information(callback, order)
 
     except CostEnoughError:
         await callback.answer(
@@ -107,7 +102,8 @@ async def menu_order_confirm(callback: CallbackQuery):
         )
 
     except (Exception, NotFoundUserError) as e:
-        logger.exception(e)
+        logger.exception("Ошибка оформления заказа %s", e)
+
         await callback.answer(
             text="❌ Ошибка получения данных",
             show_alert=True,
@@ -149,7 +145,7 @@ async def new_address(message: Message, state: FSMContext):
         await message_send_order_information(message, user_info)
 
     except Exception as e:
-        logger.exception(e)
+        logger.exception("Ошибка изменения адреса %s", e)
 
         await message.answer(
             text="❌ Ошибка изменения адреса",
@@ -192,8 +188,8 @@ async def new_full_name(message: Message, state: FSMContext):
 
         await message_send_order_information(message, order)
 
-    except Exception as e:
-        logger.exception(e)
+    except Exception:
+        logger.error("Ошибка изменения ФИО %s", e)
 
         await message.answer(
             text="❌ Ошибка изменения ФИО",
@@ -214,9 +210,7 @@ async def change_phone(callback: CallbackQuery, state: FSMContext):
             reply_markup=get_back_to_confirm_order(),
         )
 
-    except Exception as e:
-        logger.exception(e)
-
+    except Exception:
         await callback.answer(
             text="❌ Ошибка обновления телефона",
             show_alert=True,
@@ -240,11 +234,13 @@ async def message_new_phone(message: Message, state: FSMContext):
 
     except ValueError as e:
         logger.warning(e)
+
         await message.answer("Не правильно введён номер телефона\n\nПример: +7 999 000 9900")
         return
 
     except Exception as e:
-        logger.exception(e)
+        logger.error("Ошибка изменения номера телефона %s", e)
+
         await message.answer(
             text="❌ Ошибка изменения телефона",
             reply_markup=get_back_to_confirm_order()
