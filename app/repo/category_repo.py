@@ -12,7 +12,7 @@ class CategoryRepo:
         self.session = session
 
     async def create_category(self, category_info: CategoryCreate) -> Tuple[int, str]:
-        result  = await self.session.execute(
+        result = await self.session.execute(
             insert(Category)
             .values(
                 name=category_info.name,
@@ -25,7 +25,6 @@ class CategoryRepo:
 
         return category_id, category_name
 
-
     async def get_category_by_slug(self, slug: str) -> Optional[Category]:
         result = await self.session.execute(
             select(Category).where(Category.slug == slug)
@@ -35,10 +34,7 @@ class CategoryRepo:
 
     async def get_existing_categories(self, admin: bool = False) -> List[Category]:
         """Метод для выдачи названия категорий только тех где есть хоть какой-то товар имея именно эту категорию"""
-        query = (
-            select(Category)
-            .join(Product, Product.category_id == Category.id)
-        )
+        query = select(Category).join(Product, Product.category_id == Category.id)
 
         if not admin:
             query = query.where(
@@ -47,11 +43,8 @@ class CategoryRepo:
                 Product.quantity > 0,
             )
 
-        result = await self.session.execute(
-            query
-            .distinct()
-            .order_by(Category.id))
-        
+        result = await self.session.execute(query.distinct().order_by(Category.id))
+
         return list(result.scalars().all())
 
     async def get_categories(self) -> List[Category]:

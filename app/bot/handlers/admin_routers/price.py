@@ -2,9 +2,11 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, FSInputFile, Message
 
-from app.bot.fsm.fsms import PriceChange
+from app.schemas.fsm.fsms import PriceChange
 from app.bot.keyboards.admin_keyboards.product_update import (
-    get_access_options, get_options_for_changes)
+    get_access_options,
+    get_options_for_changes,
+)
 from app.bot.service.admin_service import admin_service
 from app.bot.service.product_service import product_service
 from app.utils import logger
@@ -23,6 +25,7 @@ get all products by slug
 router: admin_product:{slug}:{product_id}
 get product info bu product_id
 """
+
 
 @router.callback_query(F.data.startswith("admin_panel:change:price"))
 async def process_price_change(callback: CallbackQuery, state: FSMContext):
@@ -51,6 +54,7 @@ async def process_price_change(callback: CallbackQuery, state: FSMContext):
         )
         return
 
+
 @router.message(PriceChange.new_price)
 async def process_new_price(message: Message, state: FSMContext):
     try:
@@ -69,7 +73,6 @@ async def process_new_price(message: Message, state: FSMContext):
         await message.answer("Введите корректную цену числом")
         return
 
-# TODO: улучшить callback_query для подтверждения цены
 
 @router.callback_query(F.data == "change:access_price")
 async def access_price_change(callback: CallbackQuery, state: FSMContext):
@@ -115,6 +118,7 @@ async def access_price_change(callback: CallbackQuery, state: FSMContext):
             show_alert=True,
         )
         return
+
 
 @router.callback_query(F.data == "change:delete_price")
 async def delete_price_change(callback: CallbackQuery, state: FSMContext):

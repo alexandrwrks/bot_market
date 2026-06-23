@@ -127,10 +127,7 @@ class BasketRepo:
         )
 
         return [
-            OrderInfoItem(
-                name=name,
-                quantity=quantity,
-                price=price)
+            OrderInfoItem(name=name, quantity=quantity, price=price)
             for name, quantity, price in result.all()
         ]
 
@@ -215,7 +212,9 @@ class BasketRepo:
         total_price = result.scalar_one_or_none()
         return total_price or 0
 
-    async def get_basket_product_info(self, telegram_id: int, product_id: int) -> OrderInfoItem:
+    async def get_basket_product_info(
+        self, telegram_id: int, product_id: int
+    ) -> OrderInfoItem:
         result = await self.session.execute(
             select(
                 Product.name.label("name"),
@@ -227,7 +226,6 @@ class BasketRepo:
             .where(
                 BasketItem.product_id == product_id,
                 Basket.telegram_id == telegram_id,
-
             )
         )
 
@@ -236,10 +234,7 @@ class BasketRepo:
         return OrderInfoItem.model_validate(info)
 
     async def update_product_quantity_in_basket(
-        self,
-        basket_id: int,
-        product_id: int,
-        new_quantity: int
+        self, basket_id: int, product_id: int, new_quantity: int
     ) -> None:
         await self.session.execute(
             update(BasketItem)

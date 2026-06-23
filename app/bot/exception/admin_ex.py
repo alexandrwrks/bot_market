@@ -4,3 +4,7 @@ class AdminError(Exception):
 
 class AdminInfoError(AdminError):
     pass
+
+
+class OrdersNotEnough(AdminError):
+    pass

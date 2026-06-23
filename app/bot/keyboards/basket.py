@@ -12,6 +12,7 @@ def get_keyboard_to_basket():
 
     return keyboard.adjust(1).as_markup()
 
+
 def get_user_basket():
     keyboard = InlineKeyboardBuilder()
 
@@ -34,11 +35,14 @@ def get_user_basket_products(product: List[ProductsInBasket]):
 
     return keyboard.adjust(1).as_markup()
 
+
 def change_basket_product_info(product_id: int):
     keyboard = InlineKeyboardBuilder()
 
     keyboard.button(text="➕ Добавить ещё", callback_data="menu:catalog")
-    keyboard.button(text="❌ Удалить товар", callback_data=f"product:delete:{product_id}")
+    keyboard.button(
+        text="❌ Удалить товар", callback_data=f"product:delete:{product_id}"
+    )
     keyboard.button(text="🔙 Вернуться корзину", callback_data="menu:basket")
 
     return keyboard.adjust(1).as_markup()

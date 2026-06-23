@@ -1,6 +1,6 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from app.bot.handlers.order.order_command import OrderCreateSchema
+from app.schemas.fsm.order_fsm import OrderCreateSchema
 
 
 def get_user_orders(orders):
@@ -66,15 +66,15 @@ def get_order_information(user_info: OrderCreateSchema):
 
     keyboard.button(
         text=("🔄 Изменить адрес" if user_info.address else "➕ Добавить адрес"),
-        callback_data=f"order:change_address"
+        callback_data=f"order:change_address",
     )
     keyboard.button(
         text=("🔄 Изменить ФИО" if user_info.full_name else "➕ Добавить ФИО"),
-        callback_data=f"order:change_full_name"
+        callback_data=f"order:change_full_name",
     )
     keyboard.button(
         text=("🔄 Изменить телефон" if user_info.phone else "➕ Добавить телефон"),
-        callback_data=f"order:change_phone"
+        callback_data=f"order:change_phone",
     )
     keyboard.button(text="🔙 Назад", callback_data="menu:basket")
     keyboard.button(text="✅ Подтвердить", callback_data=f"order:done")

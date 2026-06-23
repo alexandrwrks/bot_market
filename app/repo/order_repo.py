@@ -1,24 +1,26 @@
+from typing import List
+
 from sqlalchemy import func, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.bot.fsm.order_fsm import OrderCreateSchema
-from app.database.models import Order, OrderItem, Product
+from app.schemas.fsm.order_fsm import OrderCreateSchema
+from app.database.models import Order, OrderItem
+from app.schemas.schema import CreateUserOrderInfo
 
 
 class OrderRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create_order(
-        self, telegram_id: int, name: str, phone: str, total_price: int
-    ):
+    async def create_order(self, user_info: CreateUserOrderInfo):
         result = await self.session.execute(
             insert(Order)
             .values(
-                telegram_id=telegram_id,
-                name=name,
-                phone=phone,
-                total_price=total_price,
+                telegram_id=user_info.telegram_id,
+                full_name=user_info.full_name,
+                address=user_info.address,
+                phone=user_info.phone,
+                total_price=user_info.total_price,
             )
             .returning(Order.id)
         )
@@ -101,7 +103,7 @@ class OrderRepo:
 
         return result.scalar_one()
 
-    async def get_active_users_orders(self):
+    async def get_active_users_orders(self) -> List[Order]:
         result = await self.session.execute(
             select(Order).where(
                 Order.status.in_(
@@ -114,7 +116,7 @@ class OrderRepo:
             )
         )
 
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     async def get_user_orders_info(self, telegram_id: int):
         result = await self.session.execute(
@@ -137,8 +139,9 @@ class OrderRepo:
 
     async def get_info_order(self, telegram_id: int) -> OrderCreateSchema:
         result = await self.session.execute(
-            select(Order.full_name, Order.address, Order.phone)
-            .where(Order.telegram_id == telegram_id)
+            select(Order.full_name, Order.address, Order.phone).where(
+                Order.telegram_id == telegram_id
+            )
         )
 
         full_name, address, phone = result.scalars()
@@ -149,7 +152,9 @@ class OrderRepo:
             phone=phone,
         )
 
-    async def update_order_address(self, address: str, telegram_id: int) -> OrderCreateSchema:
+    async def update_order_address(
+        self, address: str, telegram_id: int
+    ) -> OrderCreateSchema:
         result = await self.session.execute(
             update(Order)
             .values(address=address)
@@ -165,8 +170,9 @@ class OrderRepo:
             phone=phone,
         )
 
-
-    async def update_order_full_name(self, full_name: str, telegram_id: int) -> OrderCreateSchema:
+    async def update_order_full_name(
+        self, full_name: str, telegram_id: int
+    ) -> OrderCreateSchema:
         result = await self.session.execute(
             update(Order)
             .values(full_name=full_name)
@@ -182,8 +188,9 @@ class OrderRepo:
             phone=phone,
         )
 
-
-    async def update_order_phone(self, phone: str, telegram_id: int) -> OrderCreateSchema:
+    async def update_order_phone(
+        self, phone: str, telegram_id: int
+    ) -> OrderCreateSchema:
         result = await self.session.execute(
             update(Order)
             .values(phone=phone)

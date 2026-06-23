@@ -2,7 +2,7 @@ from aiogram.types import User as TgUser
 from sqlalchemy import func, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.bot.fsm.order_fsm import OrderCreateSchema
+from app.schemas.fsm.order_fsm import OrderCreateSchema
 from app.database.models import User
 
 
@@ -20,7 +20,7 @@ class UserRepo:
             )
         )
 
-    async def get_user(self, telegram_id: int):
+    async def get_user(self, telegram_id: int) -> User | None:
         result = await self.session.execute(
             select(User).where(User.telegram_id == telegram_id)
         )
@@ -40,8 +40,9 @@ class UserRepo:
         result = await self.session.execute(select(func.count(User.id)))
         return result.scalar_one_or_none()
 
-
-    async def update_user_address(self, address: str, telegram_id: int) -> OrderCreateSchema:
+    async def update_user_address(
+        self, address: str, telegram_id: int
+    ) -> OrderCreateSchema:
         result = await self.session.execute(
             update(User)
             .values(address=address)
@@ -52,12 +53,12 @@ class UserRepo:
         info = result.first()
 
         return OrderCreateSchema(
-            address=info.address,
-            full_name=info.full_name,
-            phone=info.phone
+            address=info.address, full_name=info.full_name, phone=info.phone
         )
 
-    async def update_user_full_name(self, full_name: str, telegram_id: int) -> OrderCreateSchema:
+    async def update_user_full_name(
+        self, full_name: str, telegram_id: int
+    ) -> OrderCreateSchema:
         result = await self.session.execute(
             update(User)
             .values(full_name=full_name)
@@ -68,12 +69,12 @@ class UserRepo:
         info = result.first()
 
         return OrderCreateSchema(
-            address=info.address,
-            full_name=info.full_name,
-            phone=info.phone
+            address=info.address, full_name=info.full_name, phone=info.phone
         )
 
-    async def update_user_phone(self, phone: str, telegram_id: int) -> OrderCreateSchema:
+    async def update_user_phone(
+        self, phone: str, telegram_id: int
+    ) -> OrderCreateSchema:
         result = await self.session.execute(
             update(User)
             .values(phone=phone)
@@ -84,8 +85,5 @@ class UserRepo:
         info = result.first()
 
         return OrderCreateSchema(
-            address=info.address,
-            full_name=info.full_name,
-            phone=info.phone
+            address=info.address, full_name=info.full_name, phone=info.phone
         )
-

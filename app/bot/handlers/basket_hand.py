@@ -5,15 +5,18 @@ from aiogram.types import CallbackQuery
 from app.bot.exception.basket_ex import ClearBasketError, NotProductsInBasket
 from app.bot.exception.product_ex import NotFoundProductError
 from app.bot.exception.user_ex import NotFoundUserError
-from app.bot.keyboards.basket import (change_basket_product_info,
-                                      get_user_basket,
-                                      get_user_basket_products)
+from app.bot.keyboards.basket import (
+    change_basket_product_info,
+    get_user_basket,
+    get_user_basket_products,
+)
 from app.bot.service.basket_service import basket_service
 from app.utils import logger
 
 router = Router()
 
 MIN_ORDER_PRICE = 5000
+
 
 def build_basket_text(total_price: int) -> str:
     text = (
@@ -31,11 +34,10 @@ def build_basket_text(total_price: int) -> str:
         )
 
     else:
-        text += (
-            f"ℹ️ Минимальная сумма заказа — {MIN_ORDER_PRICE} ₽\n"
-        )
+        text += f"ℹ️ Минимальная сумма заказа — {MIN_ORDER_PRICE} ₽\n"
 
     return text
+
 
 async def _render_basket(callback: CallbackQuery) -> None:
     try:
@@ -64,6 +66,7 @@ async def _render_basket(callback: CallbackQuery) -> None:
 
         await callback.answer("Ошибка показа корзины. Попробуйте позже")
 
+
 @router.callback_query(F.data == "menu:basket")
 async def get_basket(callback: CallbackQuery):
     await _render_basket(callback)
@@ -91,6 +94,7 @@ async def basket_composition(callback: CallbackQuery):
 
         await callback.answer("Ошибка выдачи товаров из корзины")
         return
+
 
 @router.callback_query(F.data == "basket:clear")
 async def clear_basket(callback: CallbackQuery):
@@ -126,6 +130,8 @@ router: basket:product:product_id
 | Добавить другой вкус |
 | Вернуться в корзину |
 """
+
+
 @router.callback_query(F.data.startswith("basket:product:"))
 async def product_basket(callback: CallbackQuery):
     try:
@@ -144,8 +150,7 @@ async def product_basket(callback: CallbackQuery):
         )
 
         await callback.message.edit_text(
-            text=text,
-            reply_markup=change_basket_product_info(product_id)
+            text=text, reply_markup=change_basket_product_info(product_id)
         )
 
     except Exception as e:
@@ -156,12 +161,15 @@ async def product_basket(callback: CallbackQuery):
             show_alert=True,
         )
 
+
 @router.callback_query(F.data.startswith("product:delete:"))
 async def delete_basket(callback: CallbackQuery):
     try:
         product_id = int(callback.data.split(":")[-1])
 
-        await basket_service.remove_product_from_basket(telegram_id=callback.from_user.id, product_id=product_id)
+        await basket_service.remove_product_from_basket(
+            telegram_id=callback.from_user.id, product_id=product_id
+        )
 
         await callback.answer("Успешное удаление товара")
         await _render_basket(callback)
@@ -169,8 +177,5 @@ async def delete_basket(callback: CallbackQuery):
     except Exception as e:
         logger.error("Failed product delete %s", e)
 
-        await callback.answer(
-            text="Ошибка удаления товара",
-            show_alert=True
-        )
+        await callback.answer(text="Ошибка удаления товара", show_alert=True)
         return

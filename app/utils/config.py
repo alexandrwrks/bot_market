@@ -15,6 +15,8 @@ class Settings(BaseSettings):
 
     ADMIN_IDS: list[int]
 
+    MIN_VALUE: int = 5000
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore",

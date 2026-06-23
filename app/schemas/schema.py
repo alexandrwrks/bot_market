@@ -31,6 +31,15 @@ class ProductsInBasket(BaseModel):
     name: str
     quantity: int
 
+
 class CategoryCreate(BaseModel):
     name: str
     slug: str
+
+
+class CreateUserOrderInfo(BaseModel):
+    telegram_id: int
+    full_name: str
+    phone: str
+    address: str
+    total_price: int

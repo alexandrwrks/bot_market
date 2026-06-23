@@ -1,8 +1,10 @@
 from typing import List
 
-from app.bot.exception.product_ex import (NoProductsInCategoryError,
-                                          NotEnoughProductQuantityError,
-                                          NotFoundProductError)
+from app.bot.exception.product_ex import (
+    NoProductsInCategoryError,
+    NotEnoughProductQuantityError,
+    NotFoundProductError,
+)
 from app.database.config import SessionLocal
 from app.database.models import Product
 from app.repo.product_repo import ProductRepo

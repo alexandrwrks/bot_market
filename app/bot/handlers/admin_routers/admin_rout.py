@@ -3,14 +3,19 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, FSInputFile, Message
 
+from app.bot.exception.admin_ex import OrdersNotEnough
 from app.bot.exception.product_ex import NotFoundProductError
 from app.bot.exception.user_ex import NotFoundUserError, UserAdminLicense
 from app.bot.keyboards.admin_keyboards.product_update import (
-    get_admin_products_keyboard, get_exists_catalog_for_admin,
-    get_options_for_changes)
-from app.bot.keyboards.admin_keyboars import (access_product_delete,
-                                              get_admin_inline_keyboard,
-                                              get_back_admin_keyboard)
+    get_admin_products_keyboard,
+    get_exists_catalog_for_admin,
+    get_options_for_changes,
+)
+from app.bot.keyboards.admin_keyboars import (
+    access_product_delete,
+    get_admin_inline_keyboard,
+    get_back_admin_keyboard,
+)
 from app.bot.keyboards.start import get_start_inline_keyboard
 from app.bot.service.admin_service import admin_service
 from app.bot.service.category_service import category_service
@@ -76,7 +81,7 @@ async def admin_orders_callback(callback: CallbackQuery):
         for order in orders:
             text = (
                 f"НОМЕР ЗАКАЗА №{order.number}\n"
-                f"Имя пользователя: {order.name}\n"
+                f"Имя пользователя: {order.full_name}\n"
                 f"Номер телефона: {order.phone}\n"
                 f"Стоимость заказа: {order.total_price}\n"
                 f"Статус заказа: {order.status.value}"
@@ -87,6 +92,11 @@ async def admin_orders_callback(callback: CallbackQuery):
         await callback.message.answer(
             text="Выберите следующие действие:",
             reply_markup=get_back_admin_keyboard(),
+        )
+
+    except OrdersNotEnough:
+        await callback.message.answer(
+            text="Новые заказы отсутствуют", reply_markup=get_back_admin_keyboard()
         )
 
     except Exception:
@@ -128,6 +138,7 @@ async def admin_statistics_callback(callback: CallbackQuery):
             show_alert=True,
         )
 
+
 @router.callback_query(F.data.startswith("admin_panel:change:delete:"))
 async def change_delete_callback(callback: CallbackQuery):
     try:
@@ -138,7 +149,7 @@ async def change_delete_callback(callback: CallbackQuery):
 
         await callback.message.answer(
             text="Подтвердите действие",
-            reply_markup=access_product_delete(slug, product_id)
+            reply_markup=access_product_delete(slug, product_id),
         )
 
     except Exception:
@@ -168,21 +179,21 @@ async def delete_product_callback(callback: CallbackQuery):
             await callback.message.answer("✖️ Удаление товара отменено")
 
             await callback.message.answer(
-                text=WELCOME_MESSAGE,
-                reply_markup=get_admin_inline_keyboard()
+                text=WELCOME_MESSAGE, reply_markup=get_admin_inline_keyboard()
             )
 
         elif action == "confirm":
             product_name = await admin_service.delete_product(product_id=product_id)
 
             if product_name is not None:
-                await callback.message.answer(f"✅ Успешное удаление товара: {product_name}")
+                await callback.message.answer(
+                    f"✅ Успешное удаление товара: {product_name}"
+                )
             else:
                 await callback.message.asnwer("✅ Успешное удаление товара")
 
             await callback.message.answer(
-                text=WELCOME_MESSAGE,
-                reply_markup=get_admin_inline_keyboard()
+                text=WELCOME_MESSAGE, reply_markup=get_admin_inline_keyboard()
             )
 
     except Exception:

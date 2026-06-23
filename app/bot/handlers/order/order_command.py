@@ -7,10 +7,8 @@ from pydantic import BaseModel, field_validator
 
 from app.bot.exception.order_ex import CostEnoughError
 from app.bot.exception.user_ex import NotFoundUserError
-from app.bot.fsm.order_fsm import (NewAddress, NewFullName, NewPhone,
-                                   OrderCreateSchema)
-from app.bot.keyboards.orders import (get_back_to_confirm_order,
-                                      get_order_information)
+from app.schemas.fsm.order_fsm import NewAddress, NewFullName, NewPhone, OrderCreateSchema
+from app.bot.keyboards.orders import get_back_to_confirm_order, get_order_information
 from app.bot.service.order_service import order_service
 from app.bot.service.user_service import user_service
 from app.utils import logger
@@ -32,7 +30,6 @@ router: order:confirm
 Добавление full_name, address, phone в таблицу Orders для того заказа который 
 создадим после router: order: done
 """
-
 
 
 class PhoneValidator(BaseModel):
@@ -65,9 +62,9 @@ async def message_send_order_information(
         reply_markup=get_order_information(order),
     )
 
+
 async def callback_send_order_information(
-    callback: CallbackQuery,
-    order: OrderCreateSchema
+    callback: CallbackQuery, order: OrderCreateSchema
 ) -> None:
     await callback.message.edit_text(
         text=_get_information_text(order),
@@ -110,6 +107,7 @@ async def menu_order_confirm(callback: CallbackQuery):
         )
         return
 
+
 @router.callback_query(F.data == "order:change_address")
 async def order_change_address(callback: CallbackQuery, state: FSMContext):
     try:
@@ -130,6 +128,7 @@ async def order_change_address(callback: CallbackQuery, state: FSMContext):
         )
         return
 
+
 @router.message(NewAddress.address)
 async def new_address(message: Message, state: FSMContext):
     try:
@@ -148,10 +147,8 @@ async def new_address(message: Message, state: FSMContext):
         logger.exception("Ошибка изменения адреса %s", e)
 
         await message.answer(
-            text="❌ Ошибка изменения адреса",
-            reply_markup=get_back_to_confirm_order()
+            text="❌ Ошибка изменения адреса", reply_markup=get_back_to_confirm_order()
         )
-
 
 
 @router.callback_query(F.data == "order:change_full_name")
@@ -174,6 +171,7 @@ async def callback_query(callback: CallbackQuery, state: FSMContext):
         )
         return
 
+
 @router.message(NewFullName.full_name)
 async def new_full_name(message: Message, state: FSMContext):
     try:
@@ -192,8 +190,7 @@ async def new_full_name(message: Message, state: FSMContext):
         logger.error("Ошибка изменения ФИО %s", e)
 
         await message.answer(
-            text="❌ Ошибка изменения ФИО",
-            reply_markup=get_back_to_confirm_order()
+            text="❌ Ошибка изменения ФИО", reply_markup=get_back_to_confirm_order()
         )
 
 
@@ -217,6 +214,7 @@ async def change_phone(callback: CallbackQuery, state: FSMContext):
         )
         return
 
+
 @router.message(NewPhone.phone)
 async def message_new_phone(message: Message, state: FSMContext):
     try:
@@ -235,7 +233,9 @@ async def message_new_phone(message: Message, state: FSMContext):
     except ValueError as e:
         logger.warning(e)
 
-        await message.answer("Не правильно введён номер телефона\n\nПример: +7 999 000 9900")
+        await message.answer(
+            "Не правильно введён номер телефона\n\nПример: +7 999 000 9900"
+        )
         return
 
     except Exception as e:
@@ -243,8 +243,9 @@ async def message_new_phone(message: Message, state: FSMContext):
 
         await message.answer(
             text="❌ Ошибка изменения телефона",
-            reply_markup=get_back_to_confirm_order()
+            reply_markup=get_back_to_confirm_order(),
         )
+
 
 @router.callback_query(F.data == "order:done")
 async def order_done(callback: CallbackQuery):
@@ -255,4 +256,3 @@ async def order_done(callback: CallbackQuery):
         text="Создание заказа пока в разработке",
         reply_markup=get_back_to_confirm_order(),
     )
-

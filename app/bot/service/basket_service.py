@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from app.bot.exception.basket_ex import (NotEnoughProductQuantityError,
-                                         NotProductsInBasket)
+from app.bot.exception.basket_ex import (
+    NotEnoughProductQuantityError,
+    NotProductsInBasket,
+)
 from app.bot.exception.product_ex import NotFoundProductError
 from app.bot.exception.user_ex import NotFoundUserError
 from app.database.config import SessionLocal
@@ -46,7 +48,8 @@ class BasketService:
 
             logger.info(
                 "Successful delivery of goods from the basket: telegram_id=%s, product_id=%s",
-                telegram_id, product_id
+                telegram_id,
+                product_id,
             )
             return ProductCartInfo(
                 name=product.name,
@@ -233,12 +236,15 @@ class BasketService:
             async with SessionLocal() as session:
                 basket_repo = BasketRepo(session)
 
-                total_price = await basket_repo.get_active_basket_total_price(telegram_id)
+                total_price = await basket_repo.get_active_basket_total_price(
+                    telegram_id
+                )
 
                 return total_price
 
         except Exception as e:
             logger.exception("Ошибка получения стоимости корзины %s", e)
             raise
+
 
 basket_service = BasketService()

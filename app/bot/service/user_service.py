@@ -3,7 +3,7 @@ from typing import List, Tuple
 from aiogram.types import User as TgUser
 
 from app.bot.exception.user_ex import NotFoundUserError, UserAdminLicense
-from app.bot.fsm.order_fsm import OrderCreateSchema
+from app.schemas.fsm.order_fsm import OrderCreateSchema
 from app.database.config import SessionLocal
 from app.database.models import User
 from app.repo import BasketRepo, OrderRepo
@@ -108,38 +108,47 @@ class UserService:
                 user_repo = UserRepo(session)
 
                 user_info = await user_repo.get_user(telegram_id)
+                if user_info is None:
+                    raise NotFoundUserError()
 
                 return OrderCreateSchema(
                     address=user_info.address,
                     full_name=user_info.full_name,
-                    phone=user_info.phone
+                    phone=user_info.phone,
                 )
 
         except Exception:
             logger.exception("Failed to get order info")
             raise
 
-
-    async def update_user_address(self, address: str, telegram_id: int) -> OrderCreateSchema:
+    async def update_user_address(
+        self, address: str, telegram_id: int
+    ) -> OrderCreateSchema:
         try:
             async with SessionLocal() as session:
                 user_repo = UserRepo(session)
                 async with session.begin():
                     order = await user_repo.update_user_address(address, telegram_id)
 
-                    logger.info("Успешное обновление адреса: telegram_id=%s", telegram_id)
+                    logger.info(
+                        "Успешное обновление адреса: telegram_id=%s", telegram_id
+                    )
                     return order
 
         except Exception:
             logger.exception("Failed to update address user information")
             raise
 
-    async def update_user_full_name(self, full_name: str, telegram_id: int) -> OrderCreateSchema:
+    async def update_user_full_name(
+        self, full_name: str, telegram_id: int
+    ) -> OrderCreateSchema:
         try:
             async with SessionLocal() as session:
                 user_repo = UserRepo(session)
                 async with session.begin():
-                    order = await user_repo.update_user_full_name(full_name, telegram_id)
+                    order = await user_repo.update_user_full_name(
+                        full_name, telegram_id
+                    )
 
                     logger.info("Успешное обновление ФИО: telegram_id=%s", telegram_id)
                     return order
@@ -148,20 +157,23 @@ class UserService:
             logger.exception("Failed to update full_name user information")
             raise
 
-    async def update_user_phone(self, phone: str, telegram_id: int) -> OrderCreateSchema:
+    async def update_user_phone(
+        self, phone: str, telegram_id: int
+    ) -> OrderCreateSchema:
         try:
             async with SessionLocal() as session:
                 user_repo = UserRepo(session)
                 async with session.begin():
                     order = await user_repo.update_user_phone(phone, telegram_id)
 
-                    logger.info("Успешное обновление телефон: telegram_id=%s", telegram_id)
+                    logger.info(
+                        "Успешное обновление телефон: telegram_id=%s", telegram_id
+                    )
                     return order
 
         except Exception:
             logger.exception("Failed to update phone user information")
             raise
-
 
 
 user_service = UserService()

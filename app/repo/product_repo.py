@@ -61,9 +61,9 @@ class ProductRepo:
 
     async def soft_product_delete(self, product_id: int):
         product_name = await self.session.execute(
-            update(Product).
-            where(Product.id == product_id).
-            values(is_active=False)
+            update(Product)
+            .where(Product.id == product_id)
+            .values(is_active=False)
             .returning(Product.name)
         )
 
@@ -98,7 +98,9 @@ class ProductRepo:
 
         return result.scalar_one()
 
-    async def get_products_by_slug(self, slug: str, include_inactive: bool = False) -> List[Product]:
+    async def get_products_by_slug(
+        self, slug: str, include_inactive: bool = False
+    ) -> List[Product]:
         # Использование:
         # await repo.get_products_by_slug("category-name")  # для пользователей
         # await repo.get_products_by_slug("category-name", include_inactive=True)  # для админа

@@ -4,13 +4,17 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, FSInputFile, Message
 
-from app.bot.exception.product_ex import (NoProductsInCategoryError,
-                                          NotEnoughProductQuantityError,
-                                          NotFoundProductError)
+from app.bot.exception.product_ex import (
+    NoProductsInCategoryError,
+    NotEnoughProductQuantityError,
+    NotFoundProductError,
+)
 from app.bot.keyboards.orders import get_basket_and_catalog
-from app.bot.keyboards.product import (get_product_keyboard,
-                                       get_product_keyboard_before,
-                                       products_keyboard)
+from app.bot.keyboards.product import (
+    get_product_keyboard,
+    get_product_keyboard_before,
+    products_keyboard,
+)
 from app.bot.service.basket_service import basket_service
 from app.bot.service.product_service import product_service
 
@@ -37,22 +41,15 @@ async def get_products_by_categories(callback: CallbackQuery):
         keyboard = products_keyboard(products, slug)
 
         try:
-            await callback.message.edit_text(
-                text=text,
-                reply_markup=keyboard
-            )
+            await callback.message.edit_text(text=text, reply_markup=keyboard)
         except TelegramBadRequest:
-            await callback.message.answer(
-                text=text,
-                reply_markup=keyboard
-            )
+            await callback.message.answer(text=text, reply_markup=keyboard)
 
     except NoProductsInCategoryError:
         await callback.message.answer(
             text="❌ Нет товаров по выбранной категории. Попробуйте позже",
-            reply_markup=get_basket_and_catalog()
+            reply_markup=get_basket_and_catalog(),
         )
-
 
 
 @router.callback_query(F.data.startswith("product:"))
@@ -175,5 +172,7 @@ async def process_product_quantity(message: Message, state: FSMContext):
         return
 
     except Exception:
-        await message.answer("❌ Не удалось добавить товара в корзину. Попробуйте позже")
+        await message.answer(
+            "❌ Не удалось добавить товара в корзину. Попробуйте позже"
+        )
         return

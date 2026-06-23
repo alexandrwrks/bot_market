@@ -5,6 +5,7 @@ class OrderFSM(StatesGroup):
     name = State()
     phone = State()
 
+
 class PriceChange(StatesGroup):
     new_price = State()
 
@@ -20,6 +21,7 @@ class AddNewProduct(StatesGroup):
     price = State()
     quantity = State()
     photo_path = State()
+
 
 class AddNewCategory(StatesGroup):
     name = State()

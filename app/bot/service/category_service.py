@@ -30,7 +30,9 @@ class CategoryService:
 
                 categories = await category_repo.get_categories()
 
-                logger.info(f"Successfully get categories for admin: count_of_categories={len(categories)}")
+                logger.info(
+                    f"Successfully get categories for admin: count_of_categories={len(categories)}"
+                )
                 return categories
 
         except Exception:
@@ -42,7 +44,6 @@ class CategoryService:
             async with SessionLocal() as session:
                 category_repo = CategoryRepo(session)
                 async with session.begin():
-
                     await category_repo.update_category_active(category_id)
 
                     logger.info(f"Successfully updated category {category_id}")
@@ -50,7 +51,6 @@ class CategoryService:
         except Exception:
             logger.exception("Failed to update category")
             raise
-
 
 
 category_service = CategoryService()

@@ -3,9 +3,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, FSInputFile, Message
 
 from app.bot.exception.product_ex import NotFoundProductError
-from app.bot.fsm.fsms import QuantityChange
+from app.schemas.fsm.fsms import QuantityChange
 from app.bot.keyboards.admin_keyboards.product_update import (
-    get_access_options_quantity, get_options_for_changes)
+    get_access_options_quantity,
+    get_options_for_changes,
+)
 from app.bot.keyboards.admin_keyboars import get_admin_inline_keyboard
 from app.bot.service.admin_service import admin_service
 from app.bot.service.product_service import product_service
@@ -56,7 +58,6 @@ async def process_new_price(message: Message, state: FSMContext):
         reply_markup=get_access_options_quantity(),
     )
 
-# TODO: улучшить callback_query для подтверждения цены
 
 @router.callback_query(F.data == "change:access_quantity")
 async def access_price_change(callback: CallbackQuery, state: FSMContext):

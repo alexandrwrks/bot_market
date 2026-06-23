@@ -11,8 +11,10 @@ class OrderCreateSchema(BaseModel):
 class NewAddress(StatesGroup):
     address = State()
 
+
 class NewFullName(StatesGroup):
     full_name = State()
+
 
 class NewPhone(StatesGroup):
     phone = State()

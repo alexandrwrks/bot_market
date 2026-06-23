@@ -3,8 +3,7 @@ from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 
 from app.bot.exception.order_ex import NotUserOrder
-from app.bot.keyboards.orders import (get_basket_and_catalog,
-                                      get_detail_keyboard)
+from app.bot.keyboards.orders import get_basket_and_catalog, get_detail_keyboard
 from app.bot.service.order_service import order_service
 
 router = Router()
@@ -54,10 +53,7 @@ async def get_order_message(message: Message):
                 f"Создание заказа: {order.created_at}"
             )
 
-            await message.answer(
-                text=text,
-                reply_markup=get_detail_keyboard(order.id)
-            )
+            await message.answer(text=text, reply_markup=get_detail_keyboard(order.id))
 
         await message.answer(
             text="📱 Выберите действие:",

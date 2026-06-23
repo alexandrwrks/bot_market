@@ -5,6 +5,7 @@ from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError
 from pydantic import BaseModel
 
+from app.bot.exception.admin_ex import OrdersNotEnough
 from app.database.config import SessionLocal
 from app.database.models import Category
 from app.repo import CategoryRepo, OrderRepo, ProductRepo, UserRepo
@@ -53,7 +54,7 @@ class Status(str, Enum):
 
 class AdminOrders(BaseModel):
     number: int
-    name: str
+    full_name: str | None
     phone: str
     total_price: int
     status: Status
@@ -85,12 +86,14 @@ class AdminService:
                 order_repo = OrderRepo(session)
 
                 orders = await order_repo.get_active_users_orders()
+                if not orders:
+                    raise OrdersNotEnough
 
                 logger.info("Successful delivery of orders")
                 return [
                     AdminOrders(
                         number=order.id,  # номер телефона
-                        name=order.name,  # имя пользователя
+                        full_name=order.full_name,  # имя пользователя
                         phone=order.phone,  # номер телефона
                         total_price=order.total_price,  # стоимость заказа
                         status=Status(order.status),  # статус заказа
@@ -154,7 +157,8 @@ class AdminService:
                     product_name = await product_repo.soft_product_delete(product_id)
                     logger.info(
                         "Successful product delete: product_id=%s, product_name=%s",
-                        product_id, product_name
+                        product_id,
+                        product_name,
                     )
 
                     return product_name
@@ -173,27 +177,30 @@ class AdminService:
 
                     product_id = await product_repo.create_product(product_info)
 
-                    logger.info("Успешное добавления товара: product_name=%s", product_info.name)
+                    logger.info(
+                        "Успешное добавления товара: product_name=%s", product_info.name
+                    )
                     return product_id
 
         except Exception:
             logger.exception("Failed to add new product")
             raise
 
-
     async def add_new_category(self, data: dict) -> None:
         try:
             async with SessionLocal() as session:
                 category_repo = CategoryRepo(session)
                 async with session.begin():
-
                     category_info = CategoryCreate.model_validate(data)
 
-                    category_id, category_name = await category_repo.create_category(category_info)
+                    category_id, category_name = await category_repo.create_category(
+                        category_info
+                    )
 
                     logger.info(
                         "Successful category create: category_id=%s, category_name=%s",
-                        category_id, category_name
+                        category_id,
+                        category_name,
                     )
 
         except Exception:
@@ -212,5 +219,6 @@ class AdminService:
         except Exception:
             logger.exception("Failed to get admin categories")
             raise
+
 
 admin_service = AdminService()

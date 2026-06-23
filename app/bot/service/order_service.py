@@ -1,43 +1,71 @@
-from typing import List
+from typing import List, Tuple
 
 from app.bot.exception.basket_ex import NotProductsInBasket
-from app.bot.exception.order_ex import (CostEnoughError, CreateOrderError,
-                                        NotUserOrder)
-from app.bot.fsm.order_fsm import OrderCreateSchema
+from app.bot.exception.order_ex import CostEnoughError, CreateOrderError, NotUserOrder
 from app.database.config import SessionLocal
-from app.repo import BasketRepo
+from app.repo import BasketRepo, UserRepo
 from app.repo.order_repo import OrderRepo
-from app.schemas.schema import OrderInfo, OrderInfoItem, UserOrderInfo
-from app.utils import logger
+from app.schemas.schema import (
+    CreateUserOrderInfo,
+    OrderInfo,
+    OrderInfoItem,
+    UserOrderInfo,
+)
+from app.utils import logger, settings
 
 
 class OrderService:
-    async def create_order(self, telegram_id: int, user_data: dict) -> bool:
+    async def create_order(self, telegram_id: int) -> Tuple[int, int]:
+        """
+        Создание заказа пользователя
+
+        аргументы функции → telegram_id: int
+
+        План действий:
+        1) создать заказ и получить id
+        2) перекинуть все продукты с корзины в таблицу OrderItem
+        3) вернуть данные о заказе: order_id, total_price,
+
+        """
         try:
             async with SessionLocal() as session:
                 order_repo = OrderRepo(session)
                 basket_repo = BasketRepo(session)
+                user_repo = UserRepo(session)
 
                 async with session.begin():
                     """Создание заказа
                     telegram_id: int,
                     total_price: int → стоимость всего заказа,
                     """
+                    user_info = await user_repo.get_user(telegram_id=telegram_id)
+                    if user_info is None:
+                        raise NotUserOrder()
+
                     total_price = await basket_repo.get_active_basket_total_price(
                         telegram_id=telegram_id
                     )
-                    if total_price == 0:
-                        logger.warning("Failed create order basket price = 0: telegram_id=%s", telegram_id)
+                    if total_price == 0 or total_price < settings.MIN_VALUE:
+                        logger.warning(
+                            "Failed create order basket invalid price: telegram_id=%s",
+                            telegram_id,
+                        )
                         raise NotProductsInBasket()
 
                     order_id = await order_repo.create_order(
-                        telegram_id=telegram_id,
-                        name=user_data["name"],
-                        phone=user_data["phone"],
-                        total_price=total_price,
+                        CreateUserOrderInfo(
+                            telegram_id=telegram_id,
+                            full_name=user_info.full_name,
+                            phone=user_info.phone,
+                            address=user_info.address,
+                            total_price=total_price,
+                        )
                     )
+
                     if order_id is None:
-                        logger.warning("Failed create order: telegram_id=%s", telegram_id)
+                        logger.warning(
+                            "Failed create order: telegram_id=%s", telegram_id
+                        )
                         raise CreateOrderError()
                     """
                     Получить все товары находящиеся в корзине пользователя
@@ -57,7 +85,7 @@ class OrderService:
                     """
                     Сохраняем данные о пользователе в таблицу OrderInfo
                     user_data: dict → 
-                    telegram_id, username, name, surname, phone, email, city, address
+                    telegram_id, full_name, phone, address
                     """
                     basket_id = await basket_repo.get_basket_id_by_id(
                         telegram_id=telegram_id
@@ -69,15 +97,13 @@ class OrderService:
 
                     logger.info(
                         "Successful order creation: telegram_id=%s, order_id=%s",
-                        telegram_id, order_id,
+                        telegram_id,
+                        order_id,
                     )
-                    return True
+                    return order_id, total_price
 
         except Exception:
-            logger.exception(
-                "Ошибка создания заказа: telegram_id=%s, order_id=%s",
-                telegram_id, order_id,
-            )
+            logger.exception("Ошибка создания заказа: telegram_id=%s", telegram_id)
             raise
 
     async def get_user_orders(self, telegram_id: int) -> List[UserOrderInfo]:
@@ -97,7 +123,6 @@ class OrderService:
                         status=order.status,
                         created_at=order.created_at.strftime("%d.%m.%Y %H:%M"),
                     )
-
                     for order in orders
                 ]
 
@@ -117,7 +142,7 @@ class OrderService:
                     if basket_price < 5000:
                         logger.warning(
                             "The user tried to place an order for goods worth less than 5000 RUB: telegram_id=%s",
-                            telegram_id
+                            telegram_id,
                         )
                         raise CostEnoughError()
 
@@ -138,11 +163,11 @@ class OrderService:
 
                 items = [
                     OrderInfoItem(
-                    name=item.product_name,
-                    quantity=item.quantity,
-                    price=item.price_at_time,
-                )
-                for item in order_items
+                        name=item.product_name,
+                        quantity=item.quantity,
+                        price=item.price_at_time,
+                    )
+                    for item in order_items
                 ]
 
                 order = await order_repo.get_user_order_info(order_id=order_id)
@@ -160,8 +185,7 @@ class OrderService:
 
         except Exception:
             logger.exception(
-                "Error when receiving the order information: order_id=%s",
-                order_id
+                "Error when receiving the order information: order_id=%s", order_id
             )
             raise
 
